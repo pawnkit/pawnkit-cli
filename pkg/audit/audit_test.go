@@ -42,11 +42,17 @@ func TestInspectRejectsArtifactOutsideProject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	filesystem := fsx.NewMem()
-	filesystem.AddFile(filepath.Join(dir, "pawn.json"), []byte(`{"entry":"main.pwn","experimental":{"build_file":false}}`))
-	filesystem.AddFile(filepath.Join(dir, "main.pwn"), nil)
-	filesystem.AddFile(filepath.Join(dir, "pawn.lock"), []byte(`{"schemaVersion":1,"packages":[{"name":"owner/package","resolved":"v1","commit":"1234567","source":{"type":"git","url":"https://example.test/repo"},"kind":"plugin","platformArtifacts":[{"platform":"linux-x86_64","path":"`+filepath.ToSlash(relative)+`"}]}]}`))
-	project, err := projectmodel.Load(source.NewRegistry(), filesystem, dir, projectmodel.Options{})
+	if err := os.WriteFile(filepath.Join(dir, "pawn.json"), []byte(`{"entry":"main.pwn","experimental":{"build_file":false}}`), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.pwn"), nil, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	lock := []byte(`{"schemaVersion":1,"packages":[{"name":"owner/package","resolved":"v1","commit":"1234567","source":{"type":"git","url":"https://example.test/repo"},"kind":"plugin","platformArtifacts":[{"platform":"linux-x86_64","path":"` + filepath.ToSlash(relative) + `"}]}]}`)
+	if err := os.WriteFile(filepath.Join(dir, "pawn.lock"), lock, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	project, err := projectmodel.Load(source.NewRegistry(), fsx.OS{}, dir, projectmodel.Options{})
 	if err != nil {
 		t.Fatal(err)
 	}
