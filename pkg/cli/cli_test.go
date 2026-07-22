@@ -151,6 +151,23 @@ func TestCheckHumanOutputIncludesFinding(t *testing.T) {
 	}
 }
 
+func TestCheckAcceptsCompilerConstantsAndVoidFunctions(t *testing.T) {
+	dir := testProject(t)
+	source := []byte("#if cellbits == 32\nvoid:Reset() {}\n#endif\nmain() { Reset(); }\n")
+	formatted, err := pawnfmt.Format(source, pawnfmt.Options{TabSize: 4})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.pwn"), formatted, 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	code := Run(context.Background(), []string{"check", "--project", dir, "--only", "lint"}, &stdout, &stderr, "test")
+	if code != ExitOK {
+		t.Fatalf("code=%d output=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+}
+
 func testProject(t *testing.T) string {
 	t.Helper()
 	dir := t.TempDir()

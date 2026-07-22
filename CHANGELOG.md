@@ -2,7 +2,11 @@
 
 Notable changes are recorded here.
 
-## Unreleased
+## 1.0.1 - 2026-07-22
+
+### Fixed
+
+- Updated project discovery, formatting, and linting dependencies.
 
 ## 1.0.0 - 2026-07-19
 
