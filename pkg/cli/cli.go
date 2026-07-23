@@ -40,6 +40,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 		return runDoctor(ctx, args[1:], stdout, stderr)
 	case "audit":
 		return runAudit(ctx, args[1:], stdout, stderr)
+	case "init":
+		return runInit(ctx, args[1:], stdout, stderr)
 	default:
 		_, _ = fmt.Fprintf(stderr, "pawn: unknown command %q\n", args[0])
 		return ExitUsage
@@ -53,6 +55,7 @@ Usage:
   pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--fail-fast] [--output human|json|sarif]
   pawn doctor [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]
+  pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
   pawn version
   pawn help
 

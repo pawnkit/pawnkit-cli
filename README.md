@@ -19,8 +19,19 @@ go install github.com/pawnkit/pawnkit-cli/cmd/pawn@latest
 pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--output FORMAT]
 pawn doctor [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
+pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
 pawn version
 ```
+
+Start a project with `pawn init`. It finds a single `.pwn` entry file and
+writes `pawn.json` without replacing existing project configuration:
+
+```sh
+pawn init --target openmp --include include
+```
+
+Pass `--entry` when the project contains more than one possible entry file.
+Use `--include` more than once for multiple include directories.
 
 Run `pawn check` from a project directory to validate `pawn.json` and
 `pawn.lock`, check formatting, and run pawnlint:

@@ -24,6 +24,52 @@ func TestHelpAndUnknownCommand(t *testing.T) {
 	}
 }
 
+func TestInitDiscoversProjectAndRefusesOverwrite(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, "include"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.pwn"), []byte("main() {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	args := []string{"init", "--project", dir, "--target", "samp", "--include", "include"}
+	if code := Run(context.Background(), args, &stdout, &stderr, "test"); code != ExitOK {
+		t.Fatalf("code=%d stdout=%q stderr=%q", code, stdout.String(), stderr.String())
+	}
+	content, err := os.ReadFile(filepath.Join(dir, "pawn.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, value := range []string{`"entry": "main.pwn"`, `"preset": "samp"`, `"includePaths": [`, `"include"`} {
+		if !strings.Contains(string(content), value) {
+			t.Fatalf("manifest missing %q: %s", value, content)
+		}
+	}
+	stdout.Reset()
+	stderr.Reset()
+	if code := Run(context.Background(), args, &stdout, &stderr, "test"); code != ExitUsage || !strings.Contains(stderr.String(), "already exists") {
+		t.Fatalf("overwrite code=%d stderr=%q", code, stderr.String())
+	}
+}
+
+func TestInitRequiresUnambiguousContainedPaths(t *testing.T) {
+	dir := t.TempDir()
+	for _, name := range []string{"one.pwn", "two.pwn"} {
+		if err := os.WriteFile(filepath.Join(dir, name), nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+	var stdout, stderr bytes.Buffer
+	if code := Run(context.Background(), []string{"init", "--project", dir}, &stdout, &stderr, "test"); code != ExitUsage || !strings.Contains(stderr.String(), "pass --entry") {
+		t.Fatalf("ambiguous code=%d stderr=%q", code, stderr.String())
+	}
+	stderr.Reset()
+	if code := Run(context.Background(), []string{"init", "--project", dir, "--entry", "../outside.pwn"}, &stdout, &stderr, "test"); code != ExitUsage || !strings.Contains(stderr.String(), "outside") {
+		t.Fatalf("outside code=%d stderr=%q", code, stderr.String())
+	}
+}
+
 func TestAuditOfflineDisclaimer(t *testing.T) {
 	dir := testProject(t)
 	var stdout, stderr bytes.Buffer

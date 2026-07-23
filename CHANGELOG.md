@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.1.0 - 2026-07-23
+
+### Added
+
+- Added `pawn init` for creating a checked PawnKit project manifest.
+
 ## 1.0.3 - 2026-07-23
 
 ### Fixed
