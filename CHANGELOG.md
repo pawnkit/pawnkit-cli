@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.1.3 - 2026-07-23
+
+### Changed
+
+- Used `pawn-project` to create and encode `pawn.json`.
+
 ## 1.1.2 - 2026-07-23
 
 ### Changed

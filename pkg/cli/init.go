@@ -2,7 +2,6 @@ package cli
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"flag"
 	"fmt"
@@ -12,6 +11,8 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+
+	projectmanifest "github.com/pawnkit/pawn-project/manifest"
 )
 
 type stringList []string
@@ -20,23 +21,6 @@ func (values *stringList) String() string { return strings.Join(*values, ",") }
 func (values *stringList) Set(value string) error {
 	*values = append(*values, value)
 	return nil
-}
-
-type initManifest struct {
-	Entry        string           `json:"entry"`
-	Preset       string           `json:"preset"`
-	Experimental initExperimental `json:"experimental"`
-	PawnKit      initPawnKit      `json:"pawnkit"`
-}
-
-type initExperimental struct {
-	BuildFile bool `json:"build_file"`
-}
-
-type initPawnKit struct {
-	SchemaVersion int      `json:"schemaVersion"`
-	Profile       string   `json:"profile"`
-	IncludePaths  []string `json:"includePaths,omitempty"`
 }
 
 func runInit(ctx context.Context, args []string, stdout, stderr io.Writer) int {
@@ -88,16 +72,19 @@ func runInit(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 		_, _ = fmt.Fprintln(stderr, "pawn init:", err)
 		return ExitUsage
 	}
-	manifest := initManifest{
-		Entry: resolvedEntry, Preset: *target,
-		Experimental: initExperimental{BuildFile: false},
-		PawnKit:      initPawnKit{SchemaVersion: 1, Profile: *target, IncludePaths: cleanIncludes},
+	projectManifest, err := projectmanifest.New(projectmanifest.CreateOptions{
+		Entry:        resolvedEntry,
+		Profile:      *target,
+		IncludePaths: cleanIncludes,
+	})
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "pawn init:", err)
+		return ExitInternal
 	}
-	content, err := json.MarshalIndent(manifest, "", "  ")
+	content, err := projectmanifest.EncodeJSON(projectManifest)
 	if err != nil {
 		return ExitInternal
 	}
-	content = append(content, '\n')
 	if *dryRun {
 		_, err = stdout.Write(content)
 	} else {

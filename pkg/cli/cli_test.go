@@ -41,10 +41,23 @@ func TestInitDiscoversProjectAndRefusesOverwrite(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, value := range []string{`"entry": "main.pwn"`, `"preset": "samp"`, `"includePaths": [`, `"include"`} {
-		if !strings.Contains(string(content), value) {
-			t.Fatalf("manifest missing %q: %s", value, content)
-		}
+	want := `{
+  "entry": "main.pwn",
+  "preset": "samp",
+  "experimental": {
+    "build_file": false
+  },
+  "pawnkit": {
+    "schemaVersion": 1,
+    "profile": "samp",
+    "includePaths": [
+      "include"
+    ]
+  }
+}
+`
+	if string(content) != want {
+		t.Fatalf("manifest:\n%s\nwant:\n%s", content, want)
 	}
 	stdout.Reset()
 	stderr.Reset()
