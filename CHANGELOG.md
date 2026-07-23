@@ -2,6 +2,14 @@
 
 Notable changes are recorded here.
 
+## 1.2.0 - 2026-07-23
+
+### Added
+
+- Added `pawn restore`, `pawn build`, and `pawn run` with resolved build-backend
+  requests.
+- Added direct `pawncc` builds with bounded compiler output and artifact hashes.
+
 ## 1.1.3 - 2026-07-23
 
 ### Changed

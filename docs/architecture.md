@@ -14,6 +14,10 @@ The workflow package selects tasks, resolves their dependencies, and keeps
 results in a stable order. Commands handle presentation, exit codes, and
 cancellation.
 
+Build backends receive resolved RFC 0012 requests from `pawn-project`.
+`pawn build --compiler` uses the bundled direct compiler backend. External
+backends handle restore, build, and run without reloading the manifest.
+
 ## Contracts
 
 - Exit `0`: success.

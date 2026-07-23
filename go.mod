@@ -3,7 +3,7 @@ module github.com/pawnkit/pawnkit-cli
 go 1.26.5
 
 require (
-	github.com/pawnkit/pawn-project v0.1.10
+	github.com/pawnkit/pawn-project v0.2.0
 	github.com/pawnkit/pawnfmt v1.3.5
 	github.com/pawnkit/pawnkit-core v0.1.1
 	github.com/pawnkit/pawnlint v1.1.4

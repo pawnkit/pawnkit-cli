@@ -14,8 +14,8 @@ github.com/pawnkit/pawn-analysis v0.1.14 h1:KPeMsaCT+uzYMzp4XMyP5SnRp93+5Mrbe16x
 github.com/pawnkit/pawn-analysis v0.1.14/go.mod h1:9YIyg2E3DliSL4ldTr1BAy9JP+i/5194da7MVtlg/2Q=
 github.com/pawnkit/pawn-parser v1.1.9 h1:LbhFV4XOLdi8/UXv2HTmZcTC2fGaHGms83ZSM2bcNuw=
 github.com/pawnkit/pawn-parser v1.1.9/go.mod h1:6iG1RfoTtroAadrF5A60QZc/zwalxBwn2gbgCQ/QO8Y=
-github.com/pawnkit/pawn-project v0.1.10 h1:CmdzEf082SrP7/kEz7/31YpEZXpHgBe2/fa8x0fyv4E=
-github.com/pawnkit/pawn-project v0.1.10/go.mod h1:YpfzOLsIYMyp9ztXNC5DbNOOIFhMYUxrk/epKb3rPlg=
+github.com/pawnkit/pawn-project v0.2.0 h1:92aYeae1HyqBdUdrhljf+MyRCE+ghCuNcV1sFHcBqcA=
+github.com/pawnkit/pawn-project v0.2.0/go.mod h1:YpfzOLsIYMyp9ztXNC5DbNOOIFhMYUxrk/epKb3rPlg=
 github.com/pawnkit/pawnfmt v1.3.5 h1:OBY9Q5g5XM86wkGiUYsyhGQQGB22SGPYE1DUFhn+TfI=
 github.com/pawnkit/pawnfmt v1.3.5/go.mod h1:U15LsJdiRY47xmEueHpUgLPLId/mRKetgfDR9mfCN3c=
 github.com/pawnkit/pawnkit-core v0.1.1 h1:Z1R6LUaiWkcd1Nz+0KU6TV3Vt3Fs1RsaAMfj7KgwwZg=

@@ -42,6 +42,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 		return runAudit(ctx, args[1:], stdout, stderr)
 	case "init":
 		return runInit(ctx, args[1:], stdout, stderr)
+	case "restore":
+		return runBackend(ctx, "restore", args[1:], stdout, stderr, version)
+	case "build":
+		return runBackend(ctx, "build", args[1:], stdout, stderr, version)
+	case "run":
+		return runBackend(ctx, "run", args[1:], stdout, stderr, version)
 	default:
 		_, _ = fmt.Fprintf(stderr, "pawn: unknown command %q\n", args[0])
 		return ExitUsage
@@ -56,6 +62,9 @@ Usage:
   pawn doctor [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]
   pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
+  pawn restore [--project DIR] --backend EXECUTABLE [--format human|json]
+  pawn build [--project DIR] (--compiler PATH | --backend EXECUTABLE) [--artifact FILE] [--format human|json]
+  pawn run [--project DIR] --backend EXECUTABLE [--artifact FILE] [--format human|json]
   pawn version
   pawn help
 
