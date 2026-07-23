@@ -26,6 +26,9 @@ func TestInspectReportsUnpinnedDependencyAndMissingLock(t *testing.T) {
 		if finding.Certainty != doctor.Confirmed || finding.Remediation == nil || finding.Remediation.Class != doctor.FixReview {
 			t.Fatalf("finding = %+v", finding)
 		}
+		if finding.Remediation.Command != "" {
+			t.Fatalf("unsupported command suggested: %+v", finding.Remediation)
+		}
 	}
 }
 

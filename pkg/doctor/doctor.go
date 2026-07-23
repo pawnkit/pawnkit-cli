@@ -103,7 +103,7 @@ func dependencyFindings(projectManifest *manifest.Manifest, hasLock bool) []Find
 		findings = append(findings, Finding{
 			ID: "lockfile-missing", Severity: "warning", Certainty: Confirmed, Source: "pawn-project",
 			Message:     "dependencies are declared but pawn.lock is missing",
-			Remediation: &Remediation{Class: FixReview, Command: "pawn update", Message: "resolve dependencies and review the generated lockfile"},
+			Remediation: &Remediation{Class: FixReview, Message: "resolve dependencies and review the generated lockfile"},
 		})
 	}
 	for _, dependency := range dependencies {
@@ -118,7 +118,7 @@ func dependencyFindings(projectManifest *manifest.Manifest, hasLock bool) []Find
 			ID:       "dependency-unpinned/" + strings.ToLower(dependency.Name()),
 			Severity: "warning", Certainty: Confirmed, Source: "pawn-project",
 			Message:     fmt.Sprintf("dependency %s %s", dependency.Name(), detail),
-			Remediation: &Remediation{Class: FixReview, Command: "pawn update", Message: "pin and review an immutable version or commit"},
+			Remediation: &Remediation{Class: FixReview, Message: "pin and review an immutable version or commit"},
 		})
 	}
 	return findings

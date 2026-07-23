@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.1.1 - 2026-07-23
+
+### Fixed
+
+- Stopped suggesting an update command that the CLI does not provide.
+
 ## 1.1.0 - 2026-07-23
 
 ### Added
