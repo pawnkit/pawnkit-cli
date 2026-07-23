@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.1.2 - 2026-07-23
+
+### Changed
+
+- Updated project, formatter, and linter dependencies.
+
 ## 1.1.1 - 2026-07-23
 
 ### Fixed
