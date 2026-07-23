@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.0.3 - 2026-07-23
+
+### Fixed
+
+- Updated formatting and linting dependencies.
+
 ## 1.0.2 - 2026-07-23
 
 ### Fixed
