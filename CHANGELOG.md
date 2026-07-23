@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.0.2 - 2026-07-23
+
+### Fixed
+
+- Kept project health checks consistent on Windows.
+
 ## 1.0.1 - 2026-07-22
 
 ### Fixed
