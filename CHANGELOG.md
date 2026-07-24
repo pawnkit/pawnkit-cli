@@ -2,6 +2,13 @@
 
 Notable changes are recorded here.
 
+## 1.2.1 - 2026-07-24
+
+### Changed
+
+- Updated the lint dependency to v1.1.5, pulling in an analysis release that
+  removes duplicate work and a quadratic scan from large-file analysis.
+
 ## 1.2.0 - 2026-07-23
 
 ### Added
