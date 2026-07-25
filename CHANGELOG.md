@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.3.0 - 2026-07-25
+
+### Changed
+
+- Use build-backend schema v2 and diagnostic schema v2.
+
 ## 1.2.1 - 2026-07-24
 
 ### Changed

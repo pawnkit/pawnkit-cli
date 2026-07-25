@@ -37,7 +37,7 @@ func (runner *fakeRunner) Run(_ context.Context, _ string, args ...string) ([]by
 		return nil, err
 	}
 	result := projectbackend.Result{
-		Kind: "result", SchemaVersion: 1, Status: "passed",
+		Kind: "result", SchemaVersion: projectbackend.SchemaVersion, Status: "passed",
 		Backend:   projectbackend.Identity{Name: "fixture", Version: "1.0.0"},
 		Artifacts: []projectbackend.Artifact{}, Diagnostics: []protocol.Diagnostic{},
 	}
@@ -51,7 +51,7 @@ func (runner *fakeRunner) Run(_ context.Context, _ string, args ...string) ([]by
 func TestRunNegotiatesAndExecutes(t *testing.T) {
 	runner := &fakeRunner{}
 	result, err := Run(context.Background(), runner, "fixture", projectbackend.Request{
-		Kind: "request", SchemaVersion: 1, Operation: projectbackend.Build,
+		Kind: "request", SchemaVersion: projectbackend.SchemaVersion, Operation: projectbackend.Build,
 		ProjectRoot: "/project", Profile: "openmp", Target: "openmp",
 		Entry: "/project/main.pwn", Output: "/project/main.amx",
 		IncludePaths: []string{}, Defines: map[string]string{}, Arguments: []string{},
