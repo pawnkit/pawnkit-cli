@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "repository": "pawnkit/pawnkit-cli",
+  "maturity": "preview",
+  "platforms": ["linux-amd64", "windows-amd64", "darwin-arm64"],
+  "profiles": ["samp-037", "openmp"],
+  "compilers": [
+    { "name": "pawncc", "version": "3.10.10" }
+  ],
+  "contracts": [
+    { "name": "pawn-project", "major": 1 },
+    { "name": "pawn-diagnostic", "major": 2 },
+    { "name": "pawn-build-backend", "major": 2 },
+    { "name": "pawn-release-set", "major": 1 }
+  ],
+  "limitations": [
+    "The sampctl backend cannot yet accept a resolved PawnKit build request.",
+    "Build evidence uses Pawn compiler 3.10.10 on Linux."
+  ]
+}

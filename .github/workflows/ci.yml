@@ -89,6 +89,17 @@ jobs:
           mkdir smoke
           tar -xzf dist/pawn-linux-amd64.tar.gz -C smoke
           smoke/pawn version | grep -Eq '^pawn .+$'
-          ! smoke/pawn version | grep -q dev
+          if smoke/pawn version | grep -q dev; then
+            exit 1
+          fi
           test -f dist/checksums.txt
           (cd dist && sha256sum -c checksums.txt)
+
+  support:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5
+      - uses: pawnkit/pawn-actions/support-check@v1.6.1
+        with:
+          repository: pawnkit/pawnkit-cli
+          targets: linux-amd64,windows-amd64,darwin-arm64

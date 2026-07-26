@@ -1,5 +1,7 @@
 # pawnkit-cli
 
+[![Maturity: preview](https://img.shields.io/badge/maturity-preview-blue)](.pawnkit/support.json)
+
 `pawn` gives a Pawn project one command for the checks you run every day. It
 loads the project once, then hands formatting, linting, and optional build or
 test work to the appropriate PawnKit tool.
