@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os"
 	"path/filepath"
 	"strings"
@@ -130,6 +131,35 @@ func TestCheckAndDoctorJSON(t *testing.T) {
 		if !strings.Contains(stdout.String(), `"schemaVersion": 1`) {
 			t.Fatalf("%v output=%s", command, stdout.String())
 		}
+	}
+}
+
+func TestProjectReportsResolvedSelection(t *testing.T) {
+	dir := t.TempDir()
+	manifest := `{
+		"entry": "main.pwn",
+		"preset": "openmp",
+		"builds": [{"name": "development"}],
+		"runtimes": [{"name": "local"}]
+	}`
+	if err := os.WriteFile(filepath.Join(dir, "pawn.json"), []byte(manifest), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.pwn"), []byte("main() {}\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	code := Run(context.Background(), []string{"project", "--project", dir, "--output", "json"}, &stdout, &stderr, "test")
+	if code != ExitOK {
+		t.Fatalf("code=%d output=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+	var report projectReport
+	if err := json.Unmarshal(stdout.Bytes(), &report); err != nil {
+		t.Fatal(err)
+	}
+	if report.SchemaVersion != 1 || report.Profile != "openmp" || report.Build != "development" ||
+		report.Runtime != "local" || report.Entry != filepath.Join(dir, "main.pwn") {
+		t.Fatalf("project report = %#v", report)
 	}
 }
 

@@ -38,6 +38,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 		return runCheck(ctx, args[1:], stdout, stderr)
 	case "doctor":
 		return runDoctor(ctx, args[1:], stdout, stderr)
+	case "project":
+		return runProject(ctx, args[1:], stdout, stderr)
 	case "audit":
 		return runAudit(ctx, args[1:], stdout, stderr)
 	case "init":
@@ -60,6 +62,7 @@ func writeHelp(output io.Writer) error {
 Usage:
   pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--fail-fast] [--output human|json|sarif]
   pawn doctor [--project DIR] [--output human|json]
+  pawn project [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]
   pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
   pawn restore [--project DIR] --backend EXECUTABLE [--format human|json]

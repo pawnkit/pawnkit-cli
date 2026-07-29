@@ -20,6 +20,7 @@ go install github.com/pawnkit/pawnkit-cli/cmd/pawn@latest
 ```text
 pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--output FORMAT]
 pawn doctor [--project DIR] [--output FORMAT]
+pawn project [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
 pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
 pawn restore [--project DIR] --backend EXECUTABLE
@@ -59,6 +60,9 @@ asking the backend to rediscover the project.
 `pawn doctor` looks for common project problems such as missing entry files,
 unpinned dependencies, path-case collisions, and credentials in configuration
 files. It reports possible fixes but does not change the project.
+
+`pawn project` prints the resolved profile, build, runtime, and entry point.
+Use JSON output when an editor or script needs that selection.
 
 `pawn audit` checks the local lockfile and platform artifacts. It can also write
 a CycloneDX or SPDX SBOM:

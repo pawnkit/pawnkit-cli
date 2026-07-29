@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.4.0 - 2026-07-29
+
+### Added
+
+- Added `pawn project` for reading the resolved project selection.
+
 ## 1.3.1 - 2026-07-25
 
 ### Changed
