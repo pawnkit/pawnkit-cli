@@ -1,6 +1,7 @@
 package directbackend
 
 import (
+	"path/filepath"
 	"slices"
 	"testing"
 
@@ -27,6 +28,28 @@ func TestCompilerArgumentsUseResolvedOrder(t *testing.T) {
 	}
 	if !slices.Equal(got, want) {
 		t.Fatalf("arguments = %v, want %v", got, want)
+	}
+}
+
+func TestCompilerDiagnosticsParsePawnCCOutput(t *testing.T) {
+	root := t.TempDir()
+	output := "gamemodes/main.pwn(42) : error 017: undefined symbol \"Player\"\n" +
+		"gamemodes/main.pwn(50 -- 52) : warning 203: symbol is never used: \"value\"\n" +
+		"Pawn compiler 3.10.11\n"
+	diagnostics := compilerDiagnostics(root, output, output)
+	if len(diagnostics) != 2 {
+		t.Fatalf("diagnostics = %#v", diagnostics)
+	}
+	if diagnostics[0].Code != "pawncc-017" || diagnostics[0].Severity != "error" ||
+		diagnostics[0].Primary.Range == nil || diagnostics[0].Primary.Range.Start.Line != 41 {
+		t.Fatalf("error diagnostic = %#v", diagnostics[0])
+	}
+	wantURI := "file://" + filepath.ToSlash(filepath.Join(root, "gamemodes", "main.pwn"))
+	if diagnostics[0].Primary.URI != wantURI {
+		t.Fatalf("URI = %q, want %q", diagnostics[0].Primary.URI, wantURI)
+	}
+	if diagnostics[1].Code != "pawncc-203" || diagnostics[1].Severity != "warning" {
+		t.Fatalf("warning diagnostic = %#v", diagnostics[1])
 	}
 }
 

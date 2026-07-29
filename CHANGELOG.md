@@ -2,6 +2,12 @@
 
 Notable changes are recorded here.
 
+## 1.4.1 - 2026-07-29
+
+### Fixed
+
+- Include pawncc errors and warnings in JSON build diagnostics.
+
 ## 1.4.0 - 2026-07-29
 
 ### Added

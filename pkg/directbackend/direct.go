@@ -12,13 +12,19 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
+	"strconv"
+	"strings"
 
 	projectbackend "github.com/pawnkit/pawn-project/backend"
 	"github.com/pawnkit/pawnkit-core/protocol"
+	coresource "github.com/pawnkit/pawnkit-core/source"
 )
 
 const outputLimit = 1 << 20
+
+var compilerDiagnosticPattern = regexp.MustCompile(`^(.+)\(([0-9]+)(?:\s*--\s*[0-9]+)?\)\s*:\s*(fatal error|error|warning)\s+([0-9]+):\s*(.+)$`)
 
 func Execute(ctx context.Context, request projectbackend.Request, version string) (projectbackend.Result, error) {
 	if request.Operation != projectbackend.Build || request.Compiler == nil {
@@ -62,6 +68,7 @@ func Execute(ctx context.Context, request projectbackend.Request, version string
 			Truncated: stdout.truncated || stderr.truncated,
 		},
 	}
+	result.Diagnostics = compilerDiagnostics(request.ProjectRoot, stdout.String(), stderr.String())
 	if status == "passed" {
 		artifact, err := artifact(request.Output)
 		if err != nil {
@@ -70,6 +77,50 @@ func Execute(ctx context.Context, request projectbackend.Request, version string
 		result.Artifacts = append(result.Artifacts, artifact)
 	}
 	return result, nil
+}
+
+func compilerDiagnostics(root string, outputs ...string) []protocol.Diagnostic {
+	result := make([]protocol.Diagnostic, 0)
+	seen := make(map[string]bool)
+	for _, output := range outputs {
+		for line := range strings.Lines(output) {
+			match := compilerDiagnosticPattern.FindStringSubmatch(strings.TrimSpace(line))
+			if match == nil {
+				continue
+			}
+			path := match[1]
+			if !filepath.IsAbs(path) {
+				path = filepath.Join(root, path)
+			}
+			path = filepath.Clean(path)
+			lineNumber, _ := strconv.Atoi(match[2])
+			severity := "error"
+			if match[3] == "warning" {
+				severity = "warning"
+			}
+			code := "pawncc-" + match[4]
+			key := path + "\x00" + match[2] + "\x00" + code + "\x00" + match[5]
+			if seen[key] {
+				continue
+			}
+			seen[key] = true
+			position := protocol.Position{Line: max(lineNumber-1, 0)}
+			end := position
+			end.Character = 1
+			result = append(result, protocol.Diagnostic{
+				SchemaVersion: protocol.DiagnosticSchemaVersion,
+				Code:          code,
+				Source:        "pawncc",
+				Severity:      severity,
+				Message:       match[5],
+				Primary: protocol.Location{
+					URI:   coresource.FileURI(path).String(),
+					Range: &protocol.Range{Start: position, End: end},
+				},
+			})
+		}
+	}
+	return result
 }
 
 func compilerArguments(request projectbackend.Request) []string {
