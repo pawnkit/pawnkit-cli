@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.1 - 2026-07-29
+
+- Read tested release sets through schema v3.
+
 ## 1.5.0 - 2026-07-29
 
 - Add `pawn toolchain` and optional doctor checks for pinned tested release

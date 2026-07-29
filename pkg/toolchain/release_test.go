@@ -3,6 +3,7 @@ package toolchain
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -52,9 +53,24 @@ func TestLoadAndInspect(t *testing.T) {
 	}
 }
 
+func TestLoadAcceptsCurrentReleaseSetSchemas(t *testing.T) {
+	t.Parallel()
+
+	for _, version := range []int{1, 2, 3} {
+		path := filepath.Join(t.TempDir(), "set.json")
+		data := fmt.Sprintf(`{"schemaVersion":%d,"id":"tested","components":[{"name":"pawn","version":"v1.5.1"}]}`, version)
+		if err := os.WriteFile(path, []byte(data), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := Load(path); err != nil {
+			t.Fatalf("schema v%d: %v", version, err)
+		}
+	}
+}
+
 func TestLoadRejectsUnsupportedSchema(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "set.json")
-	if err := os.WriteFile(path, []byte(`{"schemaVersion":2,"id":"next","components":[{"name":"pawn","version":"v1"}]}`), 0o600); err != nil {
+	if err := os.WriteFile(path, []byte(`{"schemaVersion":4,"id":"next","components":[{"name":"pawn","version":"v1"}]}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
 	if _, err := Load(path); err == nil {

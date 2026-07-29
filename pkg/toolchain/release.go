@@ -82,7 +82,7 @@ func Load(path string) (ReleaseSet, error) {
 	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
 		return ReleaseSet{}, errors.New("release set contains multiple JSON values")
 	}
-	if set.SchemaVersion != 1 {
+	if set.SchemaVersion < 1 || set.SchemaVersion > 3 {
 		return ReleaseSet{}, fmt.Errorf("unsupported release-set schema version %d", set.SchemaVersion)
 	}
 	if set.ID == "" || len(set.Components) == 0 {
