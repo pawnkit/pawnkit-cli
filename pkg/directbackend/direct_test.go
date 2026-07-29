@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	projectbackend "github.com/pawnkit/pawn-project/backend"
+	coresource "github.com/pawnkit/pawnkit-core/source"
 )
 
 func TestCompilerArgumentsUseResolvedOrder(t *testing.T) {
@@ -44,7 +45,7 @@ func TestCompilerDiagnosticsParsePawnCCOutput(t *testing.T) {
 		diagnostics[0].Primary.Range == nil || diagnostics[0].Primary.Range.Start.Line != 41 {
 		t.Fatalf("error diagnostic = %#v", diagnostics[0])
 	}
-	wantURI := "file://" + filepath.ToSlash(filepath.Join(root, "gamemodes", "main.pwn"))
+	wantURI := coresource.FileURI(filepath.Join(root, "gamemodes", "main.pwn")).String()
 	if diagnostics[0].Primary.URI != wantURI {
 		t.Fatalf("URI = %q, want %q", diagnostics[0].Primary.URI, wantURI)
 	}
