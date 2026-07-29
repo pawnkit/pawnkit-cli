@@ -29,6 +29,15 @@ pawn run [--project DIR] --backend EXECUTABLE
 pawn version
 ```
 
+Check the installed tools against a pinned tested release set:
+
+```sh
+pawn toolchain --release-set toolchain.json
+```
+
+`PAWN_RELEASE_SET` can provide the same file to `pawn toolchain` and
+`pawn doctor`. Overrides remain usable, but PawnKit reports them as untested.
+
 Start a project with `pawn init`. It finds a single `.pwn` entry file and
 writes `pawn.json` without replacing existing project configuration:
 

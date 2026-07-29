@@ -34,10 +34,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 			return ExitInternal
 		}
 		return ExitOK
+	case "toolchain":
+		return runToolchain(ctx, args[1:], stdout, stderr, version)
 	case "check":
 		return runCheck(ctx, args[1:], stdout, stderr)
 	case "doctor":
-		return runDoctor(ctx, args[1:], stdout, stderr)
+		return runDoctor(ctx, args[1:], stdout, stderr, version)
 	case "project":
 		return runProject(ctx, args[1:], stdout, stderr)
 	case "audit":
@@ -68,6 +70,7 @@ Usage:
   pawn restore [--project DIR] --backend EXECUTABLE [--format human|json]
   pawn build [--project DIR] (--compiler PATH | --backend EXECUTABLE) [--artifact FILE] [--format human|json]
   pawn run [--project DIR] --backend EXECUTABLE [--artifact FILE] [--format human|json]
+  pawn toolchain --release-set FILE [--output human|json]
   pawn version
   pawn help
 

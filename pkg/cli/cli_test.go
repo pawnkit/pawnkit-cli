@@ -25,6 +25,19 @@ func TestHelpAndUnknownCommand(t *testing.T) {
 	}
 }
 
+func TestToolchainReportsPinnedCLI(t *testing.T) {
+	releaseSet := filepath.Join(t.TempDir(), "release-set.json")
+	content := `{"schemaVersion":1,"id":"tested","components":[{"name":"pawn","version":"v1.5.0"}]}`
+	if err := os.WriteFile(releaseSet, []byte(content), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	var stdout, stderr bytes.Buffer
+	code := Run(context.Background(), []string{"toolchain", "--release-set", releaseSet, "--output", "json"}, &stdout, &stderr, "1.5.0")
+	if code != ExitOK || !strings.Contains(stdout.String(), `"status": "matched"`) {
+		t.Fatalf("code=%d output=%s stderr=%s", code, stdout.String(), stderr.String())
+	}
+}
+
 func TestInitDiscoversProjectAndRefusesOverwrite(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.Mkdir(filepath.Join(dir, "include"), 0o755); err != nil {

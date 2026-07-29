@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.5.0 - 2026-07-29
+
+- Add `pawn toolchain` and optional doctor checks for pinned tested release
+  sets.
+
 Notable changes are recorded here.
 
 ## 1.4.2 - 2026-07-29
