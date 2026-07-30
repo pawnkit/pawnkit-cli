@@ -79,7 +79,16 @@ func writeToolFixture(t *testing.T, bin, name, logPath string) {
 	var path, body string
 	if os.PathSeparator == '\\' {
 		path = filepath.Join(bin, name+".bat")
-		body = "@echo off\r\necho %CD%^|" + name + "^|%*>>\"" + logPath + "\"\r\n"
+		body = "@echo off\r\n" +
+			"setlocal EnableDelayedExpansion\r\n" +
+			"set \"line=%CD%^|" + name + "\"\r\n" +
+			":args\r\n" +
+			"if \"%~1\"==\"\" goto done\r\n" +
+			"set \"line=!line!^|%~1\"\r\n" +
+			"shift\r\n" +
+			"goto args\r\n" +
+			":done\r\n" +
+			">>\"" + logPath + "\" echo(!line!\r\n"
 	} else {
 		path = filepath.Join(bin, name)
 		body = "#!/bin/sh\nprintf '%s|" + name + "' \"$PWD\" >> '" + logPath + "'\nprintf '|%s' \"$@\" >> '" + logPath + "'\nprintf '\\n' >> '" + logPath + "'\n"

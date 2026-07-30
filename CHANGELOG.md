@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.2 - 2026-07-30
+
+- Fix the Windows tool-command test fixture to preserve separate arguments.
+
 ## 1.6.1 - 2026-07-30
 
 - Ignore downloaded dependencies and tool caches when `pawn doctor` scans for
