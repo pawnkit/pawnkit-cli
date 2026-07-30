@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2 - 2026-07-30
+
+- Read sampctl resource manifests through pawn-project v0.3.8.
+
 ## 1.7.1 - 2026-07-30
 
 - Restore every sampctl dependency scheme and verify locked source integrity.
