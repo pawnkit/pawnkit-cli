@@ -67,3 +67,39 @@ func TestInspectRejectsArtifactOutsideProject(t *testing.T) {
 		t.Fatalf("report = %+v", report)
 	}
 }
+
+func TestInspectReadsSampctlLockfile(t *testing.T) {
+	filesystem := fsx.NewMem()
+	filesystem.AddFile("/project/pawn.json", []byte(`{"entry":"main.pwn","dependencies":["owner/package:1.0.0"],"experimental":{"build_file":false}}`))
+	filesystem.AddFile("/project/main.pwn", nil)
+	filesystem.AddFile("/project/pawn.lock", []byte(`{
+		"version": 1,
+		"generated": "2026-07-30T00:00:00Z",
+		"sampctl_version": "1.14.1",
+		"dependencies": {
+			"github.com/owner/package": {
+				"constraint": ":1.0.0",
+				"resolved": "1.0.0",
+				"commit": "1234567",
+				"integrity": "commit:1234567",
+				"user": "owner",
+				"repo": "package"
+			}
+		}
+	}`))
+
+	project, err := projectmodel.Load(source.NewRegistry(), filesystem, "/project", projectmodel.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if diagnostics := project.Diagnostics(); len(diagnostics) != 0 {
+		t.Fatalf("project diagnostics = %+v", diagnostics)
+	}
+
+	report := audit.Inspect(project, audit.Options{Offline: true, Source: "pawn.lock"})
+	for _, finding := range report.Findings {
+		if strings.HasPrefix(finding.ID, "pawn-project:lockfile-") {
+			t.Fatalf("unexpected lockfile finding: %+v", finding)
+		}
+	}
+}

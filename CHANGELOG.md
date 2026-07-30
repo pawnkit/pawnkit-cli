@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.3 - 2026-07-30
+
+- Read sampctl 1.14 lockfiles through pawn-project v0.3.4.
+
 ## 1.6.2 - 2026-07-30
 
 - Fix the Windows tool-command test fixture to preserve separate arguments.
