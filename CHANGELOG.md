@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0 - 2026-07-30
+
+- Restore locked source and include dependencies through pawn-project.
+
 ## 1.6.3 - 2026-07-30
 
 - Read sampctl 1.14 lockfiles through pawn-project v0.3.4.

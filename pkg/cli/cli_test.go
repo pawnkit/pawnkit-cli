@@ -74,6 +74,59 @@ func TestToolCommandReportsMissingExecutable(t *testing.T) {
 	}
 }
 
+func TestRestoreAcceptsLockedLocalDependency(t *testing.T) {
+	dir := t.TempDir()
+	if err := os.Mkdir(filepath.Join(dir, "include"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "main.pwn"), []byte("main() {}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(dir, "pawn.json"),
+		[]byte(`{"entry":"main.pwn","experimental":{"build_file":false}}`),
+		0o600,
+	); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(
+		filepath.Join(dir, "pawn.lock"),
+		[]byte(`{
+			"version": 1,
+			"generated": "2026-07-30T00:00:00Z",
+			"sampctl_version": "1.14.1",
+			"dependencies": {
+				"local:include": {
+					"constraint": "local:include",
+					"resolved": "local:include",
+					"commit": "0000000",
+					"user": "local",
+					"repo": "include",
+					"local": "include"
+				}
+			}
+		}`),
+		0o600,
+	); err != nil {
+		t.Fatal(err)
+	}
+
+	var stdout, stderr bytes.Buffer
+	code := Run(
+		context.Background(),
+		[]string{"restore", "--project", dir, "--format", "json"},
+		&stdout,
+		&stderr,
+		"test",
+	)
+	if code != ExitOK {
+		t.Fatalf("code = %d, stderr = %s", code, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), `"status": "local"`) {
+		t.Fatalf("output = %s", stdout.String())
+	}
+}
+
 func writeToolFixture(t *testing.T, bin, name, logPath string) {
 	t.Helper()
 	var path, body string

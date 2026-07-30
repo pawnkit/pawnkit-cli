@@ -26,7 +26,7 @@ pawn doctor [--project DIR] [--output FORMAT]
 pawn project [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
 pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
-pawn restore [--project DIR] --backend EXECUTABLE
+pawn restore [--project DIR]
 pawn build [--project DIR] (--compiler PATH | --backend EXECUTABLE)
 pawn run [--project DIR] --backend EXECUTABLE
 pawn version
@@ -77,9 +77,13 @@ must support PawnKit capability negotiation. `pawn check` never downloads or
 updates tools.
 
 `pawn build --compiler /path/to/pawncc` uses the resolved project directly.
-`restore`, `run`, and optional builds can use an RFC 0012 backend executable.
-Requests contain the selected profile, paths, defines, and compiler rather than
-asking the backend to rediscover the project.
+`pawn restore` installs source and include dependencies at the commits recorded
+in `pawn.lock`. Plugin, component, and filterscript resources still require
+sampctl. Pass `--backend` to use an RFC 0012 backend instead.
+
+`run` and optional builds can use an RFC 0012 backend executable. Requests
+contain the selected profile, paths, defines, and compiler rather than asking
+the backend to rediscover the project.
 
 `pawn doctor` looks for common project problems such as missing entry files,
 unpinned dependencies, path-case collisions, and credentials in configuration

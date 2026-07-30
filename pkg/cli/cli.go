@@ -53,7 +53,7 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 	case "init":
 		return runInit(ctx, args[1:], stdout, stderr)
 	case "restore":
-		return runBackend(ctx, "restore", args[1:], stdout, stderr, version)
+		return runRestore(ctx, args[1:], stdout, stderr, version)
 	case "build":
 		return runBackend(ctx, "build", args[1:], stdout, stderr, version)
 	case "run":
@@ -76,7 +76,7 @@ Usage:
   pawn project [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]
   pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
-  pawn restore [--project DIR] --backend EXECUTABLE [--format human|json]
+  pawn restore [--project DIR] [--backend EXECUTABLE] [--format human|json]
   pawn build [--project DIR] (--compiler PATH | --backend EXECUTABLE) [--artifact FILE] [--format human|json]
   pawn run [--project DIR] --backend EXECUTABLE [--artifact FILE] [--format human|json]
   pawn toolchain --release-set FILE [--output human|json]

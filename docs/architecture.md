@@ -1,7 +1,7 @@
 # Architecture
 
 The CLI orchestrates specialized PawnKit libraries and commands. It does not
-contain a parser, formatter, linter, project loader, or package manager.
+contain a parser, formatter, linter, project loader, or dependency installer.
 
 ```text
 pawn check
@@ -11,6 +11,9 @@ pawn check
 
 pawn fmt, pawn lint, pawn test
   -> installed standalone tool
+
+pawn restore
+  -> pawn-project/dependency
 ```
 
 The workflow package selects tasks, resolves their dependencies, and keeps
@@ -20,9 +23,9 @@ cancellation.
 Focused commands run the matching tool from the project root. This preserves
 its configuration and ignore rules.
 
-Build backends receive resolved RFC 0012 requests from `pawn-project`.
+Dependency restoration is implemented by `pawn-project`. Build backends receive resolved RFC 0012 requests from `pawn-project`.
 `pawn build --compiler` uses the bundled direct compiler backend. External
-backends handle restore, build, and run without reloading the manifest.
+Backends may handle restore, build, and run without reloading the manifest.
 
 ## Contracts
 
