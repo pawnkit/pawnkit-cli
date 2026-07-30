@@ -25,7 +25,8 @@ its configuration and ignore rules.
 
 Dependency restoration is implemented by `pawn-project`. Build backends
 receive resolved RFC 0012 requests from `pawn-project`.
-`pawn build` checks the project's verified compiler cache before `PATH`.
+`pawn build` checks the project's verified compiler cache, then `PATH`, then
+the checksum-pinned PawnKit compiler index.
 `pawn build --compiler` uses the bundled direct compiler backend. External
 backends may handle restore, build, and run without reloading the manifest.
 

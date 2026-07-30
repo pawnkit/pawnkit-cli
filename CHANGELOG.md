@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.0 - 2026-07-30
+
+- Install the project's exact compiler from the reviewed PawnKit index when it
+  is not cached or available on `PATH`.
+
 ## 1.9.0 - 2026-07-30
 
 - Use the compiler pinned by the project when it is available in the verified

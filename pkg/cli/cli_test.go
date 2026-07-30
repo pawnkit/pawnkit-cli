@@ -16,6 +16,7 @@ import (
 	projectmodel "github.com/pawnkit/pawn-project/project"
 	"github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnfmt"
+	"github.com/pawnkit/pawnkit-core/hash"
 	"github.com/pawnkit/pawnkit-core/source"
 )
 
@@ -106,6 +107,16 @@ func (content compilerDownload) Download(context.Context, string) (io.ReadCloser
 	return io.NopCloser(bytes.NewReader(content)), nil
 }
 
+type compilerDownloads map[string][]byte
+
+func (downloads compilerDownloads) Download(_ context.Context, rawURL string) (io.ReadCloser, error) {
+	content, ok := downloads[rawURL]
+	if !ok {
+		return nil, errors.New("unexpected download")
+	}
+	return io.NopCloser(bytes.NewReader(content)), nil
+}
+
 type compilerLookup struct {
 	path string
 	err  error
@@ -146,6 +157,7 @@ func TestResolveCompilerUsesPinnedCacheBeforePath(t *testing.T) {
 	got, err := resolveCompiler(
 		context.Background(), loaded, cacheDir, toolchain.OSCacheFS{},
 		compilerLookup{err: errors.New("PATH must not be used")},
+		compilerAcquisition{},
 	)
 	if err != nil || got != info.Path {
 		t.Fatalf("resolveCompiler = %q, %v; want %q", got, err, info.Path)
@@ -171,9 +183,63 @@ func TestResolveCompilerFallsBackToPathWhenCacheIsEmpty(t *testing.T) {
 	got, err := resolveCompiler(
 		context.Background(), loaded, filepath.Join(t.TempDir(), "toolchains"),
 		toolchain.OSCacheFS{}, compilerLookup{path: "/tools/pawncc"},
+		compilerAcquisition{},
 	)
 	if err != nil || got != "/tools/pawncc" {
 		t.Fatalf("resolveCompiler = %q, %v", got, err)
+	}
+}
+
+func TestResolveCompilerInstallsReviewedArtifactAfterPath(t *testing.T) {
+	projectDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(projectDir, "pawn.json"), []byte(`{
+		"entry":"main.pwn",
+		"preset":"samp",
+		"build":{"compiler":{"user":"pawn-lang","repo":"compiler","version":"3.10.10"}}
+	}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(projectDir, "main.pwn"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := projectmodel.Load(source.NewRegistry(), fsx.OS{}, projectDir, projectmodel.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	compiler := []byte("compiler")
+	indexURL := "https://example.test/index.json"
+	compilerURL := "https://example.test/pawncc"
+	index := []byte(`{
+		"schemaVersion":1,
+		"id":"test-index",
+		"generatedAt":"2026-07-30T00:00:00Z",
+		"artifacts":[{
+			"vendor":"pawn-lang",
+			"version":"3.10.10",
+			"profiles":["samp-037"],
+			"target":"linux-amd64",
+			"source":{"repository":"https://github.com/pawn-lang/compiler","tag":"v3.10.10","commit":"289cfeb446b5890966010bd9dbbc93f622cf3f14"},
+			"archive":{"url":"https://example.test/pawncc","format":"raw","size":8,"checksum":"` + hash.Content(compiler) + `"},
+			"executable":{"path":"pawncc","architecture":"amd64","checksum":"` + hash.Content(compiler) + `"}
+		}]
+	}`)
+	downloads := compilerDownloads{indexURL: index, compilerURL: compiler}
+	cacheDir := filepath.Join(t.TempDir(), "toolchains")
+	got, err := resolveCompiler(
+		context.Background(), loaded, cacheDir, toolchain.OSCacheFS{},
+		compilerLookup{err: errors.New("not found")},
+		compilerAcquisition{
+			indexURL:      indexURL,
+			indexChecksum: hash.Content(index),
+			target:        "linux-amd64",
+			downloader:    downloads,
+		},
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != filepath.Join(cacheDir, "pawn-lang", "3.10.10", "pawncc") {
+		t.Fatalf("compiler = %q", got)
 	}
 }
 

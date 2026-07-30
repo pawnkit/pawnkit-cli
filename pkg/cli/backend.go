@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"runtime"
 
 	projectbackend "github.com/pawnkit/pawn-project/backend"
 	"github.com/pawnkit/pawn-project/fsx"
@@ -18,6 +19,18 @@ import (
 	"github.com/pawnkit/pawnkit-cli/pkg/directbackend"
 	"github.com/pawnkit/pawnkit-core/source"
 )
+
+const (
+	compilerIndexURL = "https://pawnkit.dev/compiler-indexes/pawn-3.10.10-openmp-3.10.11.json"
+	compilerIndexSum = "sha256:ef4c1aa64ce3be544e1517ba0a7c3457c5dd4d7b00fbdce1bf7248b93aba5792"
+)
+
+type compilerAcquisition struct {
+	indexURL      string
+	indexChecksum string
+	target        string
+	downloader    toolchain.Downloader
+}
 
 func runBackend(ctx context.Context, operation projectbackend.Operation, args []string, stdout, stderr io.Writer, version string) int {
 	flags := flag.NewFlagSet(string(operation), flag.ContinueOnError)
@@ -67,6 +80,12 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 		}
 		*compiler, err = resolveCompiler(
 			ctx, loaded, cacheDir, toolchain.OSCacheFS{}, toolchain.OSPathLookup{},
+			compilerAcquisition{
+				indexURL:      compilerIndexURL,
+				indexChecksum: compilerIndexSum,
+				target:        runtime.GOOS + "-" + runtime.GOARCH,
+				downloader:    toolchain.HTTPDownloader{},
+			},
 		)
 		if err != nil {
 			if errors.Is(err, toolchain.ErrNotFound) {
@@ -125,8 +144,10 @@ func resolveCompiler(
 	cacheDir string,
 	cacheFS toolchain.CacheFS,
 	lookup toolchain.PathLookup,
+	acquisition compilerAcquisition,
 ) (string, error) {
-	if coordinate, ok := project.CompilerCoordinate(); ok && cacheDir != "" {
+	coordinate, pinned := project.CompilerCoordinate()
+	if pinned && cacheDir != "" {
 		info, err := toolchain.NewResolver(cacheFS, cacheDir, nil, nil).Resolve(ctx, toolchain.ResolveOptions{
 			Vendor:           coordinate.Vendor,
 			Version:          coordinate.Version,
@@ -140,7 +161,30 @@ func resolveCompiler(
 			return "", err
 		}
 	}
-	return toolchain.FindCompiler(lookup, compilerCandidates(project.Selection().ProfileID)...)
+	local, err := toolchain.FindCompiler(lookup, compilerCandidates(project.Selection().ProfileID)...)
+	if err == nil || !errors.Is(err, toolchain.ErrNotFound) || !pinned || cacheDir == "" ||
+		acquisition.indexURL == "" || acquisition.downloader == nil {
+		return local, err
+	}
+	indexReader, err := acquisition.downloader.Download(ctx, acquisition.indexURL)
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = indexReader.Close() }()
+	index, err := toolchain.LoadIndex(indexReader, acquisition.indexChecksum)
+	if err != nil {
+		return "", err
+	}
+	artifact, err := index.Select(coordinate.Vendor, coordinate.Version, acquisition.target)
+	if err != nil {
+		return "", err
+	}
+	info, err := toolchain.NewResolver(cacheFS, cacheDir, acquisition.downloader, nil).
+		Resolve(ctx, artifact.ResolveOptions())
+	if err != nil {
+		return "", err
+	}
+	return info.Path, nil
 }
 
 func compilerCandidates(profileID string) []string {

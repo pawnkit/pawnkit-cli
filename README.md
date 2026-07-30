@@ -77,7 +77,8 @@ must support PawnKit capability negotiation. `pawn check` never downloads or
 updates tools.
 
 `pawn build` uses the project's pinned cached compiler when available, then
-checks `PATH`. Pass `--compiler` to select another binary.
+checks `PATH`. If neither has the compiler, it installs the exact reviewed
+artifact for the current platform. Pass `--compiler` to select another binary.
 `pawn restore` installs dependency sources at the commits recorded in
 `pawn.lock`. Plugin and component binaries still require sampctl. Pass
 `--backend` to use an RFC 0012 backend instead.
