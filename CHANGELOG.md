@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.11.1 - 2026-07-30
+
+- Build nested sampctl projects whose entry or output remains inside a
+  containing Pawn workspace.
+- Apply top-level sampctl build defaults to named builds.
+
 ## 1.11.0 - 2026-07-30
 
 - Install the Pawn 3.10.8 compiler pinned by older sampctl projects.
