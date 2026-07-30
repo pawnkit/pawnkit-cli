@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.1 - 2026-07-30
+
+- Restore every sampctl dependency scheme and verify locked source integrity.
+
 ## 1.7.0 - 2026-07-30
 
 - Restore locked source and include dependencies through pawn-project.

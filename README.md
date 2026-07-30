@@ -77,9 +77,9 @@ must support PawnKit capability negotiation. `pawn check` never downloads or
 updates tools.
 
 `pawn build --compiler /path/to/pawncc` uses the resolved project directly.
-`pawn restore` installs source and include dependencies at the commits recorded
-in `pawn.lock`. Plugin, component, and filterscript resources still require
-sampctl. Pass `--backend` to use an RFC 0012 backend instead.
+`pawn restore` installs dependency sources at the commits recorded in
+`pawn.lock`. Plugin and component binaries still require sampctl. Pass
+`--backend` to use an RFC 0012 backend instead.
 
 `run` and optional builds can use an RFC 0012 backend executable. Requests
 contain the selected profile, paths, defines, and compiler rather than asking
