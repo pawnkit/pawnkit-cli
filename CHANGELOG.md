@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.0 - 2026-07-30
+
+- Use a local Pawn compiler from `PATH` when `pawn build` has no explicit backend.
+
 ## 1.7.2 - 2026-07-30
 
 - Read sampctl resource manifests through pawn-project v0.3.8.

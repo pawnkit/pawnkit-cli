@@ -27,7 +27,7 @@ pawn project [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
 pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
 pawn restore [--project DIR]
-pawn build [--project DIR] (--compiler PATH | --backend EXECUTABLE)
+pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE]
 pawn run [--project DIR] --backend EXECUTABLE
 pawn version
 ```
@@ -76,7 +76,8 @@ Use `--build-tool` or `--test-tool` to add an external backend. The executable
 must support PawnKit capability negotiation. `pawn check` never downloads or
 updates tools.
 
-`pawn build --compiler /path/to/pawncc` uses the resolved project directly.
+`pawn build` uses `pawncc` from `PATH`. Pass `--compiler` to select another
+binary.
 `pawn restore` installs dependency sources at the commits recorded in
 `pawn.lock`. Plugin and component binaries still require sampctl. Pass
 `--backend` to use an RFC 0012 backend instead.

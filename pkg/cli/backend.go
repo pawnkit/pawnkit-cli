@@ -11,6 +11,7 @@ import (
 	"github.com/pawnkit/pawn-project/fsx"
 	"github.com/pawnkit/pawn-project/profile"
 	projectmodel "github.com/pawnkit/pawn-project/project"
+	"github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnkit-cli/pkg/backendrunner"
 	"github.com/pawnkit/pawnkit-cli/pkg/capability"
 	"github.com/pawnkit/pawnkit-cli/pkg/directbackend"
@@ -39,11 +40,6 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 		_, _ = fmt.Fprintln(stderr, "pawn", operation, ": --backend is required")
 		return ExitUsage
 	}
-	if operation == projectbackend.Build && *executable == "" && *compiler == "" {
-		_, _ = fmt.Fprintln(stderr, "pawn build: --compiler or --backend is required")
-		return ExitUsage
-	}
-
 	root, err := filepath.Abs(*projectDir)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "pawn", operation, ":", err)
@@ -63,6 +59,13 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 
 	outputPath := resolvedPath(root, *artifact)
 	var compilerInfo *projectbackend.Compiler
+	if operation == projectbackend.Build && *executable == "" && *compiler == "" {
+		*compiler, err = toolchain.FindCompiler(toolchain.OSPathLookup{}, compilerCandidates(loaded.Selection().ProfileID)...)
+		if err != nil {
+			_, _ = fmt.Fprintln(stderr, "pawn build: pawncc was not found; pass --compiler or add it to PATH")
+			return ExitInternal
+		}
+	}
 	if *compiler != "" {
 		compilerPath := resolvedPath(root, *compiler)
 		compilerInfo = &projectbackend.Compiler{Path: compilerPath}
@@ -103,6 +106,13 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 		return ExitOK
 	}
 	return ExitFindings
+}
+
+func compilerCandidates(profileID string) []string {
+	if profileID == "openmp" {
+		return []string{"openmp-pawncc", "pawncc"}
+	}
+	return []string{"pawncc"}
 }
 
 func profileOptions(profileID, buildName, runtimeName string) profile.Options {

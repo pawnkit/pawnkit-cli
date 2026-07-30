@@ -74,6 +74,17 @@ func TestToolCommandReportsMissingExecutable(t *testing.T) {
 	}
 }
 
+func TestCompilerCandidatesPreferOpenMPCompiler(t *testing.T) {
+	got := compilerCandidates("openmp")
+	if len(got) != 2 || got[0] != "openmp-pawncc" || got[1] != "pawncc" {
+		t.Fatalf("compilerCandidates(openmp) = %v", got)
+	}
+	got = compilerCandidates("samp-037")
+	if len(got) != 1 || got[0] != "pawncc" {
+		t.Fatalf("compilerCandidates(samp-037) = %v", got)
+	}
+}
+
 func TestRestoreAcceptsLockedLocalDependency(t *testing.T) {
 	dir := t.TempDir()
 	if err := os.Mkdir(filepath.Join(dir, "include"), 0o750); err != nil {
