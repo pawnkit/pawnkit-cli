@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.10.1 - 2026-07-30
+
+- Fix the managed compiler test to use PawnKit's canonical path format on
+  Windows.
+
 ## 1.10.0 - 2026-07-30
 
 - Install the project's exact compiler from the reviewed PawnKit index when it

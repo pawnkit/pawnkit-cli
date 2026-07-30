@@ -13,6 +13,7 @@ import (
 	"testing"
 
 	"github.com/pawnkit/pawn-project/fsx"
+	"github.com/pawnkit/pawn-project/pathutil"
 	projectmodel "github.com/pawnkit/pawn-project/project"
 	"github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnfmt"
@@ -238,7 +239,7 @@ func TestResolveCompilerInstallsReviewedArtifactAfterPath(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got != filepath.Join(cacheDir, "pawn-lang", "3.10.10", "pawncc") {
+	if got != pathutil.Join(cacheDir, "pawn-lang", "3.10.10", "pawncc") {
 		t.Fatalf("compiler = %q", got)
 	}
 }
