@@ -19,6 +19,9 @@ go install github.com/pawnkit/pawnkit-cli/cmd/pawn@latest
 
 ```text
 pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--output FORMAT]
+pawn fmt [--project DIR] [--check]
+pawn lint [--project DIR]
+pawn test [--project DIR]
 pawn doctor [--project DIR] [--output FORMAT]
 pawn project [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
@@ -56,6 +59,18 @@ pawn check
 pawn check --only project,lint
 pawn check --output sarif > pawn.sarif
 ```
+
+The focused commands use the installed standalone tools:
+
+```sh
+pawn fmt --check
+pawn fmt
+pawn lint
+pawn test
+```
+
+Put `pawnfmt`, `pawnlint`, and `pawntest` on `PATH`. Each command runs from the
+project directory, so local tool configuration still applies.
 
 Use `--build-tool` or `--test-tool` to add an external backend. The executable
 must support PawnKit capability negotiation. `pawn check` never downloads or

@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0 - 2026-07-30
+
+- Add `pawn fmt`, `pawn lint`, and `pawn test` as focused entry points for the
+  installed tools.
+
 ## 1.5.1 - 2026-07-29
 
 - Read tested release sets through schema v3.

@@ -38,6 +38,12 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 		return runToolchain(ctx, args[1:], stdout, stderr, version)
 	case "check":
 		return runCheck(ctx, args[1:], stdout, stderr)
+	case "fmt":
+		return runFormat(ctx, args[1:], stdout, stderr)
+	case "lint":
+		return runLint(ctx, args[1:], stdout, stderr)
+	case "test":
+		return runTest(ctx, args[1:], stdout, stderr)
 	case "doctor":
 		return runDoctor(ctx, args[1:], stdout, stderr, version)
 	case "project":
@@ -63,6 +69,9 @@ func writeHelp(output io.Writer) error {
 
 Usage:
   pawn check [--project DIR] [--only TASKS] [--skip TASKS] [--fail-fast] [--output human|json|sarif]
+  pawn fmt [--project DIR] [--check]
+  pawn lint [--project DIR]
+  pawn test [--project DIR]
   pawn doctor [--project DIR] [--output human|json]
   pawn project [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]

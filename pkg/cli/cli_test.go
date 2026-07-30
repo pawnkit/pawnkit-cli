@@ -17,11 +17,75 @@ func TestHelpAndUnknownCommand(t *testing.T) {
 	if code := Run(context.Background(), nil, &stdout, &stderr, "test"); code != ExitOK {
 		t.Fatalf("help code = %d", code)
 	}
-	if !strings.Contains(stdout.String(), "pawn check") || !strings.Contains(stdout.String(), "pawn doctor") || !strings.Contains(stdout.String(), "pawn audit") {
+	if !strings.Contains(stdout.String(), "pawn check") || !strings.Contains(stdout.String(), "pawn fmt") ||
+		!strings.Contains(stdout.String(), "pawn lint") || !strings.Contains(stdout.String(), "pawn test") ||
+		!strings.Contains(stdout.String(), "pawn doctor") || !strings.Contains(stdout.String(), "pawn audit") {
 		t.Fatalf("help = %q", stdout.String())
 	}
 	if code := Run(context.Background(), []string{"unknown"}, &stdout, &stderr, "test"); code != ExitUsage {
 		t.Fatalf("unknown code = %d", code)
+	}
+}
+
+func TestToolCommandsRunFromProject(t *testing.T) {
+	project := t.TempDir()
+	bin := t.TempDir()
+	logPath := filepath.Join(t.TempDir(), "calls.log")
+	for _, name := range []string{"pawnfmt", "pawnlint", "pawntest"} {
+		writeToolFixture(t, bin, name, logPath)
+	}
+	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+
+	tests := []struct {
+		args []string
+		want string
+	}{
+		{[]string{"fmt", "--project", project}, "pawnfmt|--write"},
+		{[]string{"fmt", "--project", project, "--check"}, "pawnfmt|--check"},
+		{[]string{"lint", "--project", project, "--profile", "strict"}, "pawnlint|--profile|strict"},
+		{[]string{"test", "--project", project, "--run", "sample"}, "pawntest|--run|sample"},
+	}
+	for _, test := range tests {
+		var stdout, stderr bytes.Buffer
+		if code := Run(context.Background(), test.args, &stdout, &stderr, "test"); code != ExitOK {
+			t.Fatalf("%v code=%d stderr=%s", test.args, code, stderr.String())
+		}
+	}
+	content, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range tests {
+		want := project + "|" + test.want
+		if !strings.Contains(string(content), want) {
+			t.Errorf("calls do not contain %q:\n%s", want, content)
+		}
+	}
+}
+
+func TestToolCommandReportsMissingExecutable(t *testing.T) {
+	t.Setenv("PATH", t.TempDir())
+	var stdout, stderr bytes.Buffer
+	if code := Run(context.Background(), []string{"lint"}, &stdout, &stderr, "test"); code != ExitInternal {
+		t.Fatalf("code=%d stderr=%s", code, stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "pawnlint was not found on PATH") {
+		t.Fatalf("stderr=%s", stderr.String())
+	}
+}
+
+func writeToolFixture(t *testing.T, bin, name, logPath string) {
+	t.Helper()
+	var path, body string
+	if os.PathSeparator == '\\' {
+		path = filepath.Join(bin, name+".bat")
+		body = "@echo off\r\necho %CD%^|" + name + "^|%*>>\"" + logPath + "\"\r\n"
+	} else {
+		path = filepath.Join(bin, name)
+		body = "#!/bin/sh\nprintf '%s|" + name + "' \"$PWD\" >> '" + logPath + "'\nprintf '|%s' \"$@\" >> '" + logPath + "'\nprintf '\\n' >> '" + logPath + "'\n"
+	}
+	if err := os.WriteFile(path, []byte(body), 0o755); err != nil {
+		t.Fatal(err)
 	}
 }
 
