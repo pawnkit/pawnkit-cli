@@ -39,6 +39,8 @@ func TestInspectRedactsSecretsAndFindsCaseCollisions(t *testing.T) {
 	filesystem.AddFile("/project/config.json", []byte(`{"api_token":"do-not-print-this"}`))
 	filesystem.AddFile("/project/Data/Value.inc", nil)
 	filesystem.AddFile("/project/data/value.inc", nil)
+	filesystem.AddFile("/project/dependencies/package/pawn.json", []byte(`{"password":"vendored"}`))
+	filesystem.AddFile("/project/node_modules/package/config.json", []byte(`{"token":"vendored"}`))
 	project, err := projectmodel.Load(source.NewRegistry(), filesystem, "/project", projectmodel.Options{})
 	if err != nil {
 		t.Fatal(err)

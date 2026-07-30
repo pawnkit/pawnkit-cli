@@ -138,7 +138,7 @@ func projectFiles(filesystem fsx.FS, root string, limit int) ([]string, error) {
 			}
 			child := path.Join(directory, entry.Name())
 			if entry.IsDir() {
-				if entry.Name() != ".git" && entry.Name() != ".pawn-cache" {
+				if !ignoredProjectDirectory(entry.Name()) {
 					if err := walk(child); err != nil {
 						return err
 					}
@@ -150,6 +150,15 @@ func projectFiles(filesystem fsx.FS, root string, limit int) ([]string, error) {
 		return nil
 	}
 	return files, walk(root)
+}
+
+func ignoredProjectDirectory(name string) bool {
+	switch name {
+	case ".git", ".pawn-cache", ".pawnlint-cache", "dependencies", "node_modules", "plugins", "vendor":
+		return true
+	default:
+		return false
+	}
 }
 
 func caseFindings(files []string, root string) []Finding {

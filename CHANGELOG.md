@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.1 - 2026-07-30
+
+- Ignore downloaded dependencies and tool caches when `pawn doctor` scans for
+  secrets and path collisions.
+
 ## 1.6.0 - 2026-07-30
 
 - Add `pawn fmt`, `pawn lint`, and `pawn test` as focused entry points for the
