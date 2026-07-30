@@ -23,9 +23,11 @@ cancellation.
 Focused commands run the matching tool from the project root. This preserves
 its configuration and ignore rules.
 
-Dependency restoration is implemented by `pawn-project`. Build backends receive resolved RFC 0012 requests from `pawn-project`.
+Dependency restoration is implemented by `pawn-project`. Build backends
+receive resolved RFC 0012 requests from `pawn-project`.
+`pawn build` checks the project's verified compiler cache before `PATH`.
 `pawn build --compiler` uses the bundled direct compiler backend. External
-Backends may handle restore, build, and run without reloading the manifest.
+backends may handle restore, build, and run without reloading the manifest.
 
 ## Contracts
 

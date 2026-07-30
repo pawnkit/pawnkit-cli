@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
@@ -11,7 +12,11 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/pawnkit/pawn-project/fsx"
+	projectmodel "github.com/pawnkit/pawn-project/project"
+	"github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnfmt"
+	"github.com/pawnkit/pawnkit-core/source"
 )
 
 func TestHelpAndUnknownCommand(t *testing.T) {
@@ -92,6 +97,83 @@ func TestCompilerCandidatesPreferOpenMPCompiler(t *testing.T) {
 	got = compilerCandidates("samp-037")
 	if len(got) != 1 || got[0] != "pawncc" {
 		t.Fatalf("compilerCandidates(samp-037) = %v", got)
+	}
+}
+
+type compilerDownload []byte
+
+func (content compilerDownload) Download(context.Context, string) (io.ReadCloser, error) {
+	return io.NopCloser(bytes.NewReader(content)), nil
+}
+
+type compilerLookup struct {
+	path string
+	err  error
+}
+
+func (lookup compilerLookup) LookPath(string) (string, error) {
+	return lookup.path, lookup.err
+}
+
+func TestResolveCompilerUsesPinnedCacheBeforePath(t *testing.T) {
+	projectDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(projectDir, "pawn.json"), []byte(`{
+		"entry":"main.pwn",
+		"preset":"openmp",
+		"build":{"compiler":{"user":"openmultiplayer","repo":"compiler","version":"3.10.11"}}
+	}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(projectDir, "main.pwn"), []byte("main() {}\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := projectmodel.Load(source.NewRegistry(), fsx.OS{}, projectDir, projectmodel.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	cacheDir := filepath.Join(t.TempDir(), "toolchains")
+	info, err := toolchain.NewResolver(
+		toolchain.OSCacheFS{}, cacheDir, compilerDownload("compiler"), nil,
+	).Update(context.Background(), toolchain.ResolveOptions{
+		Vendor:      toolchain.VendorOpenMultiplayer,
+		Version:     "3.10.11",
+		DownloadURL: "https://example.test/compiler",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := resolveCompiler(
+		context.Background(), loaded, cacheDir, toolchain.OSCacheFS{},
+		compilerLookup{err: errors.New("PATH must not be used")},
+	)
+	if err != nil || got != info.Path {
+		t.Fatalf("resolveCompiler = %q, %v; want %q", got, err, info.Path)
+	}
+}
+
+func TestResolveCompilerFallsBackToPathWhenCacheIsEmpty(t *testing.T) {
+	projectDir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(projectDir, "pawn.json"), []byte(`{
+		"entry":"main.pwn",
+		"preset":"samp",
+		"build":{"compiler":{"user":"pawn-lang","repo":"compiler","version":"3.10.10"}}
+	}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(projectDir, "main.pwn"), nil, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	loaded, err := projectmodel.Load(source.NewRegistry(), fsx.OS{}, projectDir, projectmodel.Options{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := resolveCompiler(
+		context.Background(), loaded, filepath.Join(t.TempDir(), "toolchains"),
+		toolchain.OSCacheFS{}, compilerLookup{path: "/tools/pawncc"},
+	)
+	if err != nil || got != "/tools/pawncc" {
+		t.Fatalf("resolveCompiler = %q, %v", got, err)
 	}
 }
 

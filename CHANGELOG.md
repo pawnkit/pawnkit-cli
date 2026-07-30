@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.9.0 - 2026-07-30
+
+- Use the compiler pinned by the project when it is available in the verified
+  toolchain cache.
+
 ## 1.8.2 - 2026-07-30
 
 - Make tool command tests independent of Windows shell argument handling.

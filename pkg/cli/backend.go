@@ -2,6 +2,7 @@ package cli
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -60,9 +61,19 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 	outputPath := resolvedPath(root, *artifact)
 	var compilerInfo *projectbackend.Compiler
 	if operation == projectbackend.Build && *executable == "" && *compiler == "" {
-		*compiler, err = toolchain.FindCompiler(toolchain.OSPathLookup{}, compilerCandidates(loaded.Selection().ProfileID)...)
+		cacheDir, cacheErr := toolchain.DefaultCacheDir()
+		if cacheErr != nil {
+			cacheDir = ""
+		}
+		*compiler, err = resolveCompiler(
+			ctx, loaded, cacheDir, toolchain.OSCacheFS{}, toolchain.OSPathLookup{},
+		)
 		if err != nil {
-			_, _ = fmt.Fprintln(stderr, "pawn build: pawncc was not found; pass --compiler or add it to PATH")
+			if errors.Is(err, toolchain.ErrNotFound) {
+				_, _ = fmt.Fprintln(stderr, "pawn build: pawncc was not found; pass --compiler or add it to PATH")
+			} else {
+				_, _ = fmt.Fprintln(stderr, "pawn build: resolving compiler:", err)
+			}
 			return ExitInternal
 		}
 	}
@@ -106,6 +117,30 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 		return ExitOK
 	}
 	return ExitFindings
+}
+
+func resolveCompiler(
+	ctx context.Context,
+	project *projectmodel.Project,
+	cacheDir string,
+	cacheFS toolchain.CacheFS,
+	lookup toolchain.PathLookup,
+) (string, error) {
+	if coordinate, ok := project.CompilerCoordinate(); ok && cacheDir != "" {
+		info, err := toolchain.NewResolver(cacheFS, cacheDir, nil, nil).Resolve(ctx, toolchain.ResolveOptions{
+			Vendor:           coordinate.Vendor,
+			Version:          coordinate.Version,
+			ExpectedChecksum: coordinate.ExpectedChecksum,
+			Offline:          true,
+		})
+		if err == nil {
+			return info.Path, nil
+		}
+		if !errors.Is(err, toolchain.ErrOffline) {
+			return "", err
+		}
+	}
+	return toolchain.FindCompiler(lookup, compilerCandidates(project.Selection().ProfileID)...)
 }
 
 func compilerCandidates(profileID string) []string {
