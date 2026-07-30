@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.2 - 2026-07-30
+
+- Make tool command tests independent of Windows shell argument handling.
+
 ## 1.8.1 - 2026-07-30
 
 - Use pawn-project v0.3.10 so downloaded compilers retain execute permission.

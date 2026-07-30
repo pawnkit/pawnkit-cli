@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -29,21 +31,30 @@ func TestHelpAndUnknownCommand(t *testing.T) {
 
 func TestToolCommandsRunFromProject(t *testing.T) {
 	project := t.TempDir()
-	bin := t.TempDir()
-	logPath := filepath.Join(t.TempDir(), "calls.log")
-	for _, name := range []string{"pawnfmt", "pawnlint", "pawntest"} {
-		writeToolFixture(t, bin, name, logPath)
+	type call struct {
+		name    string
+		project string
+		args    []string
 	}
-	t.Setenv("PATH", bin+string(os.PathListSeparator)+os.Getenv("PATH"))
+	var calls []call
+	previous := executeTool
+	executeTool = func(_ context.Context, name, project string, args []string, _, _ io.Writer) int {
+		calls = append(calls, call{name: name, project: project, args: slices.Clone(args)})
+		return ExitOK
+	}
+	t.Cleanup(func() {
+		executeTool = previous
+	})
 
 	tests := []struct {
-		args []string
-		want string
+		args     []string
+		wantName string
+		wantArgs []string
 	}{
-		{[]string{"fmt", "--project", project}, "pawnfmt|--write"},
-		{[]string{"fmt", "--project", project, "--check"}, "pawnfmt|--check"},
-		{[]string{"lint", "--project", project, "--profile", "strict"}, "pawnlint|--profile|strict"},
-		{[]string{"test", "--project", project, "--run", "sample"}, "pawntest|--run|sample"},
+		{[]string{"fmt", "--project", project}, "pawnfmt", []string{"--write"}},
+		{[]string{"fmt", "--project", project, "--check"}, "pawnfmt", []string{"--check"}},
+		{[]string{"lint", "--project", project, "--profile", "strict"}, "pawnlint", []string{"--profile", "strict"}},
+		{[]string{"test", "--project", project, "--run", "sample"}, "pawntest", []string{"--run", "sample"}},
 	}
 	for _, test := range tests {
 		var stdout, stderr bytes.Buffer
@@ -51,14 +62,13 @@ func TestToolCommandsRunFromProject(t *testing.T) {
 			t.Fatalf("%v code=%d stderr=%s", test.args, code, stderr.String())
 		}
 	}
-	content, err := os.ReadFile(logPath)
-	if err != nil {
-		t.Fatal(err)
+	if len(calls) != len(tests) {
+		t.Fatalf("calls = %v", calls)
 	}
-	for _, test := range tests {
-		want := project + "|" + test.want
-		if !strings.Contains(string(content), want) {
-			t.Errorf("calls do not contain %q:\n%s", want, content)
+	for index, test := range tests {
+		got := calls[index]
+		if got.name != test.wantName || got.project != project || !slices.Equal(got.args, test.wantArgs) {
+			t.Errorf("call %d = %#v, want name=%q project=%q args=%v", index, got, test.wantName, project, test.wantArgs)
 		}
 	}
 }
@@ -135,30 +145,6 @@ func TestRestoreAcceptsLockedLocalDependency(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), `"status": "local"`) {
 		t.Fatalf("output = %s", stdout.String())
-	}
-}
-
-func writeToolFixture(t *testing.T, bin, name, logPath string) {
-	t.Helper()
-	var path, body string
-	if os.PathSeparator == '\\' {
-		path = filepath.Join(bin, name+".bat")
-		body = "@echo off\r\n" +
-			"setlocal EnableDelayedExpansion\r\n" +
-			"set \"line=%CD%^|" + name + "\"\r\n" +
-			":args\r\n" +
-			"if \"%~1\"==\"\" goto done\r\n" +
-			"set \"line=!line!^|%~1\"\r\n" +
-			"shift\r\n" +
-			"goto args\r\n" +
-			":done\r\n" +
-			">>\"" + logPath + "\" echo(!line!\r\n"
-	} else {
-		path = filepath.Join(bin, name)
-		body = "#!/bin/sh\nprintf '%s|" + name + "' \"$PWD\" >> '" + logPath + "'\nprintf '|%s' \"$@\" >> '" + logPath + "'\nprintf '\\n' >> '" + logPath + "'\n"
-	}
-	if err := os.WriteFile(path, []byte(body), 0o755); err != nil {
-		t.Fatal(err)
 	}
 }
 

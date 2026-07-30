@@ -70,6 +70,12 @@ func toolArgs(name string, args []string, stderr io.Writer) (string, []string, b
 }
 
 func runTool(ctx context.Context, name, project string, args []string, stdout, stderr io.Writer) int {
+	return executeTool(ctx, name, project, args, stdout, stderr)
+}
+
+var executeTool = executeExternalTool
+
+func executeExternalTool(ctx context.Context, name, project string, args []string, stdout, stderr io.Writer) int {
 	path, err := exec.LookPath(name)
 	if err != nil {
 		_, _ = fmt.Fprintf(stderr, "pawn: %s was not found on PATH\n", name)
