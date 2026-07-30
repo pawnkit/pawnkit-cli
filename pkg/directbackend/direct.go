@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -41,6 +42,7 @@ func Execute(ctx context.Context, request projectbackend.Request, version string
 	stderr := &boundedBuffer{limit: outputLimit}
 	command := exec.CommandContext(ctx, request.Compiler.Path, compilerArguments(request)...) //nolint:gosec // The resolved request selects the compiler.
 	command.Dir = request.ProjectRoot
+	command.Env = compilerEnvironment(request.Compiler.Path, runtime.GOOS, os.Environ(), os.Stat)
 	command.Stdout = stdout
 	command.Stderr = stderr
 	runErr := command.Run()
@@ -77,6 +79,37 @@ func Execute(ctx context.Context, request projectbackend.Request, version string
 		result.Artifacts = append(result.Artifacts, artifact)
 	}
 	return result, nil
+}
+
+func compilerEnvironment(
+	compilerPath string,
+	platform string,
+	environ []string,
+	stat func(string) (os.FileInfo, error),
+) []string {
+	var name string
+	switch platform {
+	case "linux":
+		name = "LD_LIBRARY_PATH"
+	case "darwin":
+		name = "DYLD_LIBRARY_PATH"
+	default:
+		return environ
+	}
+	libraryPath := filepath.Join(filepath.Dir(filepath.Dir(compilerPath)), "lib")
+	info, err := stat(libraryPath)
+	if err != nil || !info.IsDir() {
+		return environ
+	}
+	prefix := name + "="
+	result := append([]string(nil), environ...)
+	for index, value := range result {
+		if current, ok := strings.CutPrefix(value, prefix); ok {
+			result[index] = prefix + libraryPath + string(os.PathListSeparator) + current
+			return result
+		}
+	}
+	return append(result, prefix+libraryPath)
 }
 
 func compilerDiagnostics(root string, outputs ...string) []protocol.Diagnostic {

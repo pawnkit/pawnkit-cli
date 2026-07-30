@@ -1,0 +1,10 @@
+{
+  "entry": "main.pwn",
+  "output": "build/main.amx",
+  "preset": "samp",
+  "build": {
+    "compiler": {
+      "version": "3.10.8"
+    }
+  }
+}

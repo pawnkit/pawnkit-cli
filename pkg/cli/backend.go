@@ -21,8 +21,8 @@ import (
 )
 
 const (
-	compilerIndexURL = "https://pawnkit.dev/compiler-indexes/pawn-3.10.10-openmp-3.10.11.json"
-	compilerIndexSum = "sha256:ef4c1aa64ce3be544e1517ba0a7c3457c5dd4d7b00fbdce1bf7248b93aba5792"
+	compilerIndexURL = "https://pawnkit.dev/compiler-indexes/pawn-3.10.8-3.10.10-openmp-3.10.11.json"
+	compilerIndexSum = "sha256:13fb27bdb2c3eb58c884b129a114743fc68c44ee23e8f82bb6ae716aeb39e008"
 )
 
 type compilerAcquisition struct {

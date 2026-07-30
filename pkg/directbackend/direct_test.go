@@ -1,6 +1,7 @@
 package directbackend
 
 import (
+	"os"
 	"path/filepath"
 	"slices"
 	"testing"
@@ -8,6 +9,23 @@ import (
 	projectbackend "github.com/pawnkit/pawn-project/backend"
 	coresource "github.com/pawnkit/pawnkit-core/source"
 )
+
+func TestCompilerEnvironmentAddsBundledLibraries(t *testing.T) {
+	root := t.TempDir()
+	compiler := filepath.Join(root, "bin", "pawncc")
+	libraryDir := filepath.Join(root, "lib")
+	if err := os.MkdirAll(libraryDir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	got := compilerEnvironment(compiler, "linux", []string{"LD_LIBRARY_PATH=/system/lib"}, os.Stat)
+	want := "LD_LIBRARY_PATH=" + libraryDir + string(os.PathListSeparator) + "/system/lib"
+	if !slices.Contains(got, want) {
+		t.Fatalf("environment = %v, want %q", got, want)
+	}
+	if unchanged := compilerEnvironment(compiler, "windows", []string{"PATH=x"}, os.Stat); !slices.Equal(unchanged, []string{"PATH=x"}) {
+		t.Fatalf("Windows environment = %v", unchanged)
+	}
+}
 
 func TestCompilerArgumentsUseResolvedOrder(t *testing.T) {
 	request := projectbackend.Request{

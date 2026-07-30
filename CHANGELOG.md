@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.11.0 - 2026-07-30
+
+- Install the Pawn 3.10.8 compiler pinned by older sampctl projects.
+- Load shared compiler libraries from reviewed archive layouts.
+
 ## 1.10.1 - 2026-07-30
 
 - Fix the managed compiler test to use PawnKit's canonical path format on
