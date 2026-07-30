@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.8.1 - 2026-07-30
+
+- Use pawn-project v0.3.10 so downloaded compilers retain execute permission.
+
 ## 1.8.0 - 2026-07-30
 
 - Use a local Pawn compiler from `PATH` when `pawn build` has no explicit backend.
