@@ -29,6 +29,7 @@ pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
 pawn restore [--project DIR]
 pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE]
 pawn run [--project DIR] --backend EXECUTABLE
+pawn runtime install [--version VERSION] [--target OS-ARCH]
 pawn version
 ```
 
@@ -86,6 +87,15 @@ artifact for the current platform. Pass `--compiler` to select another binary.
 `run` and optional builds can use an RFC 0012 backend executable. Requests
 contain the selected profile, paths, defines, and compiler rather than asking
 the backend to rediscover the project.
+
+Install the reviewed open.mp server runtime for the current host:
+
+```sh
+pawn runtime install
+```
+
+The command verifies the pinned index, archive, and server executable before
+placing it in PawnKit's runtime cache. Linux and Windows hosts are supported.
 
 `pawn doctor` looks for common project problems such as missing entry files,
 unpinned dependencies, path-case collisions, and credentials in configuration

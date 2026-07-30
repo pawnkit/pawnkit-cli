@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.12.0 - 2026-07-30
+
+- Add `pawn runtime install` for verified open.mp server archives.
+
 ## 1.11.1 - 2026-07-30
 
 - Build nested sampctl projects whose entry or output remains inside a

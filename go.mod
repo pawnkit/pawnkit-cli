@@ -7,6 +7,7 @@ require (
 	github.com/pawnkit/pawnfmt v1.3.5
 	github.com/pawnkit/pawnkit-core v0.2.0
 	github.com/pawnkit/pawnlint v1.1.5
+	github.com/pawnkit/pawnserver v0.3.1
 )
 
 require (

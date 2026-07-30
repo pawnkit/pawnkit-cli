@@ -36,6 +36,8 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, version s
 		return ExitOK
 	case "toolchain":
 		return runToolchain(ctx, args[1:], stdout, stderr, version)
+	case "runtime":
+		return runRuntime(ctx, args[1:], stdout, stderr)
 	case "check":
 		return runCheck(ctx, args[1:], stdout, stderr)
 	case "fmt":
@@ -79,6 +81,7 @@ Usage:
   pawn restore [--project DIR] [--backend EXECUTABLE] [--format human|json]
   pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE] [--artifact FILE] [--format human|json]
   pawn run [--project DIR] --backend EXECUTABLE [--artifact FILE] [--format human|json]
+  pawn runtime install [--vendor NAME] [--version VERSION] [--target OS-ARCH] [--destination DIR]
   pawn toolchain --release-set FILE [--output human|json]
   pawn version
   pawn help
