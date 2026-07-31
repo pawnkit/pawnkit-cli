@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.30.0 - 2026-07-31
+
+- Install guarded package dependency cycles deterministically.
+
 ## 1.29.1 - 2026-07-31
 
 - Accept branch dependency references containing slashes.
