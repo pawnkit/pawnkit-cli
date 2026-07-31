@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.23.0 - 2026-07-31
+
+- Resolve sampctl-compatible dependency ranges to deterministic GitHub tags.
+
 ## 1.22.0 - 2026-07-31
 
 - Reuse verified dependency checkouts across projects.

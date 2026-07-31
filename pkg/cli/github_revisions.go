@@ -22,6 +22,11 @@ import (
 
 const maxGitHubManifestResponse = 12 << 20
 
+const (
+	githubTagsPerPage = 100
+	maxGitHubTagPages = 10
+)
+
 type githubRevisionProvider struct {
 	client  *http.Client
 	baseURL string
@@ -34,13 +39,21 @@ func (p githubRevisionProvider) Resolve(
 	locked *lockfile.Package,
 ) (dependency.Revision, error) {
 	commit := ""
+	resolved := "HEAD"
 	if locked != nil {
 		commit = locked.Commit
+		resolved = locked.Resolved
 	}
 	if commit == "" {
 		ref := dep.Ref
 		if ref == "" {
 			ref = "HEAD"
+		} else if dep.RefKind == manifest.RefTag && dependency.IsTagRange(dep.Ref) {
+			selected, selectErr := p.selectTag(ctx, dep)
+			if selectErr != nil {
+				return dependency.Revision{}, selectErr
+			}
+			ref = selected
 		}
 		var response struct {
 			SHA string `json:"sha"`
@@ -50,18 +63,15 @@ func (p githubRevisionProvider) Resolve(
 			return dependency.Revision{}, err
 		}
 		commit = response.SHA
+		resolved = ref
 	}
 
 	packageManifest, canonicalName, err := p.manifest(ctx, dep, commit)
 	if err != nil {
 		return dependency.Revision{}, err
 	}
-	resolved := "HEAD"
-	if dep.Ref != "" {
-		resolved = dep.Ref
-		if dep.RefKind == manifest.RefCommit && len(commit) >= 8 {
-			resolved = commit[:8]
-		}
+	if dep.RefKind == manifest.RefCommit && len(commit) >= 8 {
+		resolved = commit[:8]
 	}
 	return dependency.Revision{
 		Commit: commit, Resolved: resolved,
@@ -69,6 +79,29 @@ func (p githubRevisionProvider) Resolve(
 		SourceURL:     "https://github.com/" + canonicalName,
 		Manifest:      *packageManifest,
 	}, nil
+}
+
+func (p githubRevisionProvider) selectTag(
+	ctx context.Context,
+	dep manifest.Dependency,
+) (string, error) {
+	tags := make([]string, 0, githubTagsPerPage)
+	for page := 1; page <= maxGitHubTagPages; page++ {
+		var response []struct {
+			Name string `json:"name"`
+		}
+		endpoint := p.endpoint(dep, "/tags") + fmt.Sprintf("?per_page=%d&page=%d", githubTagsPerPage, page)
+		if err := p.getJSON(ctx, endpoint, &response); err != nil {
+			return "", err
+		}
+		for _, tag := range response {
+			tags = append(tags, tag.Name)
+		}
+		if len(response) < githubTagsPerPage {
+			return dependency.SelectTag(tags, dep.Ref)
+		}
+	}
+	return "", fmt.Errorf("GitHub repository has more than %d tags; use an exact commit", githubTagsPerPage*maxGitHubTagPages)
 }
 
 func (p githubRevisionProvider) manifest(

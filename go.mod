@@ -3,7 +3,7 @@ module github.com/pawnkit/pawnkit-cli
 go 1.26.5
 
 require (
-	github.com/pawnkit/pawn-project v0.25.0
+	github.com/pawnkit/pawn-project v0.26.1
 	github.com/pawnkit/pawnfmt v1.3.5
 	github.com/pawnkit/pawnkit-core v0.2.0
 	github.com/pawnkit/pawnlint v1.1.5
@@ -12,6 +12,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/editorconfig/editorconfig-core-go/v2 v2.6.4 // indirect
 	github.com/pawnkit/pawn-analysis v0.1.15 // indirect
 	github.com/pawnkit/pawn-parser v1.1.9 // indirect
