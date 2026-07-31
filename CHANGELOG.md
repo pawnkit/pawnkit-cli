@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.26.0 - 2026-07-31
+
+- Prefer direct dependency pins over unqualified transitive references.
+
 ## 1.25.0 - 2026-07-31
 
 - Install leaf dependency repositories that have no package manifest.
