@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.19.0 - 2026-07-31
+
+- Reconcile changed manifest dependencies with existing lockfiles.
+- Keep matching locked installs independent of provider APIs.
+
 ## 1.18.0 - 2026-07-31
 
 - Create a sampctl-compatible lock from a manifest-only GitHub project.

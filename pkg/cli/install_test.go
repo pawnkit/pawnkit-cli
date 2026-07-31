@@ -39,6 +39,7 @@ func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
 				"user":"owner",
 				"repo":"plugin",
 				"scheme":"plugin",
+				"transitive":true,
 				"local":"vendor/plugin"
 			}
 		}
@@ -172,6 +173,87 @@ func TestInstallCreatesMissingLock(t *testing.T) {
 	if !bytes.Contains(content, []byte(`"github.com/owner/package"`)) ||
 		!bytes.Contains(content, []byte(`"sampctl_version": "1.14.1"`)) {
 		t.Fatalf("lockfile = %s", content)
+	}
+}
+
+func TestInstallReconcilesChangedLock(t *testing.T) {
+	root := t.TempDir()
+	writeInstallTestFile(t, root, "pawn.json", `{
+		"entry":"main.pwn",
+		"dependencies":["owner/package:v2"]
+	}`)
+	writeInstallTestFile(t, root, "main.pwn", "main() {}\n")
+	writeInstallTestFile(t, root, "pawn.lock", `{
+		"version":1,
+		"generated":"2026-07-31T00:00:00Z",
+		"sampctl_version":"1.14.1",
+		"dependencies":{"github.com/owner/package":{
+			"constraint":":v1","resolved":"v1","commit":"1111111111111111111111111111111111111111",
+			"user":"owner","repo":"package"
+		}}
+	}`)
+
+	var stdout, stderr bytes.Buffer
+	code := runInstallWith(
+		context.Background(),
+		[]string{"--project", root, "--target", "linux-amd64"},
+		&stdout,
+		&stderr,
+		installServices{
+			sourceInstaller:  installingSourceInstaller{},
+			downloader:       staticResourceDownloader{content: []byte("unused")},
+			provider:         fixedReleaseProvider{},
+			revisionProvider: fixedRevisionProvider{},
+			writeLock:        replaceLockfile,
+		},
+	)
+	if code != ExitOK {
+		t.Fatalf("code = %d, stderr = %s", code, stderr.String())
+	}
+	content, err := os.ReadFile(filepath.Join(root, "pawn.lock"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(content, []byte(`"constraint": ":v2"`)) ||
+		bytes.Contains(content, []byte(`"constraint": ":v1"`)) {
+		t.Fatalf("lockfile = %s", content)
+	}
+}
+
+func TestInstallReusesMatchingLockOffline(t *testing.T) {
+	root := t.TempDir()
+	writeInstallTestFile(t, root, "pawn.json", `{
+		"entry":"main.pwn",
+		"dependencies":["owner/package:v1"]
+	}`)
+	writeInstallTestFile(t, root, "main.pwn", "main() {}\n")
+	writeInstallTestFile(t, root, "pawn.lock", `{
+		"version":1,
+		"generated":"2026-07-31T00:00:00Z",
+		"sampctl_version":"1.14.1",
+		"dependencies":{"github.com/owner/package":{
+			"constraint":":v1","resolved":"v1","commit":"1111111111111111111111111111111111111111",
+			"user":"owner","repo":"package"
+		}}
+	}`)
+
+	var stdout, stderr bytes.Buffer
+	code := runInstallWith(
+		context.Background(),
+		[]string{"--project", root, "--target", "linux-amd64"},
+		&stdout,
+		&stderr,
+		installServices{
+			sourceInstaller: installingSourceInstaller{},
+			downloader:      staticResourceDownloader{content: []byte("unused")},
+			provider:        fixedReleaseProvider{},
+			writeLock: func(string, []byte) error {
+				return errors.New("unexpected lock write")
+			},
+		},
+	)
+	if code != ExitOK {
+		t.Fatalf("code = %d, stderr = %s", code, stderr.String())
 	}
 }
 

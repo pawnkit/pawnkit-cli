@@ -80,13 +80,13 @@ func runInstallWith(
 		return ExitInternal
 	}
 	lock := loaded.Lockfile()
-	if lock == nil {
+	if dependency.LockNeedsResolution(loaded.Manifest(), lock) {
 		if services.revisionProvider == nil {
 			_, _ = fmt.Fprintln(stderr, "pawn install: dependency resolver is not configured")
 			return ExitInternal
 		}
 		packages, err := dependency.NewGraphResolver(services.revisionProvider).
-			Resolve(ctx, loaded.Manifest(), nil)
+			Resolve(ctx, loaded.Manifest(), lock)
 		if err != nil {
 			_, _ = fmt.Fprintln(stderr, "pawn install:", err)
 			return ExitInternal
@@ -101,7 +101,15 @@ func runInstallWith(
 			now = services.now
 		}
 		generated := now()
-		content, err := lockfile.MarshalSampctlDependencies(nil, packages, generated)
+		var previous []byte
+		if lock != nil {
+			previous, err = os.ReadFile(lock.SourcePath)
+			if err != nil {
+				_, _ = fmt.Fprintln(stderr, "pawn install:", err)
+				return ExitInternal
+			}
+		}
+		content, err := lockfile.MarshalSampctlDependencies(previous, packages, generated)
 		if err != nil {
 			_, _ = fmt.Fprintln(stderr, "pawn install:", err)
 			return ExitInternal
@@ -110,12 +118,15 @@ func runInstallWith(
 			_, _ = fmt.Fprintln(stderr, "pawn install:", err)
 			return ExitInternal
 		}
-		lock = &lockfile.Lock{
-			SchemaVersion: 1,
-			GeneratedAt:   generated.UTC().Format(time.RFC3339Nano),
-			Packages:      packages,
-			SourcePath:    lockPath,
+		result, err := lockfile.Load(source.NewRegistry(), fsx.OS{}, lockPath)
+		if err != nil || result.Lock == nil || len(result.Diagnostics) != 0 {
+			if err == nil {
+				err = errors.New("generated lockfile did not validate")
+			}
+			_, _ = fmt.Fprintln(stderr, "pawn install:", err)
+			return ExitInternal
 		}
+		lock = result.Lock
 	}
 	dependencies, err := dependency.NewRestorer(fsx.OS{}, services.sourceInstaller).
 		Restore(ctx, loaded.Root(), lock)
