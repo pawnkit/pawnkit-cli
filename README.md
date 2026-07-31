@@ -86,8 +86,9 @@ artifact for the current platform. Pass `--compiler` to select another binary.
 
 `pawn run` builds an open.mp project, installs its verified server runtime when
 needed, and starts it in an isolated session. The runtime cache is not modified
-while the server runs. Projects with plugins or filterscripts still need an RFC
-0012 backend.
+while the server runs. Supported sampctl runtime settings are translated to
+open.mp configuration. Projects with plugins, filterscripts, extra gamemodes,
+or unmapped legacy settings still need an RFC 0012 backend.
 
 Pass `--backend` to use an RFC 0012 backend executable. Requests contain the
 selected profile, paths, defines, and compiler rather than asking the backend

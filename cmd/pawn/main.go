@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/pawnkit/pawnkit-cli/pkg/cli"
 )
@@ -10,5 +12,11 @@ import (
 var version = "dev"
 
 func main() {
-	os.Exit(cli.Run(context.Background(), os.Args[1:], os.Stdout, os.Stderr, version))
+	os.Exit(run())
+}
+
+func run() int {
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	return cli.Run(ctx, os.Args[1:], os.Stdout, os.Stderr, version)
 }

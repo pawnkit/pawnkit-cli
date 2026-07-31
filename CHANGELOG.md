@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.14.0 - 2026-07-31
+
+- Apply supported sampctl runtime settings when starting open.mp.
+- Reject runtime settings that native sessions cannot yet honour.
+- Stop the native server when the command receives an interrupt.
+
 ## 1.13.0 - 2026-07-31
 
 - Build and run open.mp projects with the verified native server runtime.

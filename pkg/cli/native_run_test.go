@@ -12,12 +12,47 @@ import (
 
 func TestNativeRuntimeSelectionDefaultsOpenMP(t *testing.T) {
 	project := loadNativeProject(t, `{"entry":"main.pwn","output":"main.amx","preset":"openmp"}`)
-	version, port, err := nativeRuntimeSelection(project)
+	version, options, err := nativeRuntimeSelection(project)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if version != defaultRuntimeVersion || port != 0 {
-		t.Fatalf("runtime = %s:%d", version, port)
+	if version != defaultRuntimeVersion || options.Port != 0 {
+		t.Fatalf("runtime = %s:%d", version, options.Port)
+	}
+}
+
+func TestNativeRuntimeSelectionMapsOpenMPSettings(t *testing.T) {
+	project := loadNativeProject(t, `{
+		"entry":"main.pwn",
+		"output":"main.amx",
+		"preset":"openmp",
+		"runtime":{
+			"version":"1.5.8.3079",
+			"hostname":"Test server",
+			"port":7788,
+			"announce":false,
+			"query":false,
+			"rcon_password":"secret",
+			"maxplayers":100,
+			"sleep":"4.5",
+			"gamemodetext":"Test mode"
+		}
+	}`)
+	version, options, err := nativeRuntimeSelection(project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if version != "1.5.8.3079" || options.Name != "Test server" || options.Port != 7788 ||
+		options.Announce == nil || *options.Announce || options.EnableQuery == nil || *options.EnableQuery ||
+		options.RCONPassword != "secret" || options.MaxPlayers != 100 || options.Sleep != 4.5 ||
+		options.GameMode != "Test mode" {
+		t.Fatalf("runtime = %s %+v", version, options)
+	}
+}
+
+func TestRuntimeSleepRejectsInvalidValue(t *testing.T) {
+	if _, err := runtimeSleep("soon"); err == nil {
+		t.Fatal("invalid sleep accepted")
 	}
 }
 
