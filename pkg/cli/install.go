@@ -43,9 +43,12 @@ func runInstall(
 		provider: githubReleaseProvider{
 			token: token,
 		},
-		revisionProvider: githubRevisionProvider{token: token},
-		writeLock:        replaceLockfile,
-		now:              time.Now,
+		revisionProvider: revisionProviderRouter{
+			github: githubRevisionProvider{token: token},
+			git:    dependency.GitRevisionProvider{},
+		},
+		writeLock: replaceLockfile,
+		now:       time.Now,
 	})
 }
 

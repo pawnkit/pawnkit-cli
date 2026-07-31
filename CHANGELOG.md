@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.24.0 - 2026-07-31
+
+- Install credential-free HTTPS dependencies from Git hosts outside GitHub.
+
 ## 1.23.0 - 2026-07-31
 
 - Resolve sampctl-compatible dependency ranges to deterministic GitHub tags.

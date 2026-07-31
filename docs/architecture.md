@@ -17,7 +17,7 @@ pawn restore
 
 pawn install
   -> pawn-project/dependency
-  -> GitHub release API
+  -> GitHub API or local Git client
 ```
 
 The workflow package selects tasks, resolves their dependencies, and keeps
@@ -36,8 +36,9 @@ backends may handle restore, build, and run without reloading the manifest.
 Native restore installs locked source commits first, then verifies and commits
 all RFC 0021 resources for the selected host target.
 Install resolves missing records from restored package manifests. The CLI owns
-GitHub transport and recoverable lockfile replacement; selection, inspection,
-validation, and installation remain in `pawn-project`.
+GitHub API transport, selects the Git transport for other HTTPS hosts, and
+replaces lockfiles recoverably. Selection, inspection, validation, and
+installation remain in `pawn-project`.
 
 ## Contracts
 

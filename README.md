@@ -89,8 +89,10 @@ the current host. Pass `--target OS-ARCH` to select another recorded target, or
 
 `pawn install` restores the source dependencies, resolves release assets from
 their restored manifests, updates only the PawnKit section of `pawn.lock`, and
-installs the verified files. Set `GITHUB_TOKEN` for private repositories or to
-avoid anonymous GitHub API limits.
+installs the verified files. It supports public HTTPS Git repositories and
+uses your Git credential helper when a host requires authentication. Set
+`GITHUB_TOKEN` for private GitHub repositories or to avoid anonymous API
+limits.
 
 `pawn run` builds an open.mp project, installs its verified server runtime when
 needed, and starts it in an isolated session. The runtime cache is not modified
