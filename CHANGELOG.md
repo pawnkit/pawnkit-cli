@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.25.0 - 2026-07-31
+
+- Install leaf dependency repositories that have no package manifest.
+
 ## 1.24.0 - 2026-07-31
 
 - Install credential-free HTTPS dependencies from Git hosts outside GitHub.

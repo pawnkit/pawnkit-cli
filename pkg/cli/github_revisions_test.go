@@ -79,6 +79,31 @@ func TestGitHubRevisionProviderSelectsTagRange(t *testing.T) {
 	}
 }
 
+func TestGitHubRevisionProviderAllowsLeafPackage(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+		if request.URL.Path == "/repos/owner/package/commits/HEAD" {
+			_, _ = fmt.Fprintf(writer, `{"sha":%q}`, revisionCommit)
+			return
+		}
+		http.NotFound(writer, request)
+	}))
+	t.Cleanup(server.Close)
+	dep, err := manifest.ParseDependency("owner/package")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	revision, err := (githubRevisionProvider{
+		client: server.Client(), baseURL: server.URL,
+	}).Resolve(context.Background(), dep, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if revision.CanonicalName != "owner/package" || len(revision.Manifest.Dependencies) != 0 {
+		t.Fatalf("revision = %+v", revision)
+	}
+}
+
 func TestCanonicalGitHubName(t *testing.T) {
 	tests := map[string]string{
 		"https://github.com/owner/package/blob/main/pawn.json": "owner/package",

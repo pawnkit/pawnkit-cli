@@ -140,7 +140,7 @@ func (p githubRevisionProvider) manifest(
 		}
 		return packageManifest, canonicalName, nil
 	}
-	return nil, "", errors.New("GitHub package has no pawn.json, pawn.yaml, or pawn.yml")
+	return &manifest.Manifest{}, dep.Name(), nil
 }
 
 func canonicalGitHubName(raw string) string {
