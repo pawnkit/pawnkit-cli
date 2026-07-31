@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.29.1 - 2026-07-31
+
+- Accept branch dependency references containing slashes.
+
 ## 1.29.0 - 2026-07-31
 
 - Recover stale plugin paths when an archive has one matching filename.
