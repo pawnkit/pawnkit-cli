@@ -23,7 +23,7 @@ func TestGitHubRevisionProviderResolvesManifest(t *testing.T) {
 			content := base64.StdEncoding.EncodeToString([]byte(`{
 				"dependencies":["owner/child:v2"]
 			}`))
-			_, _ = fmt.Fprintf(writer, `{"encoding":"base64","content":%q}`, content)
+			_, _ = fmt.Fprintf(writer, `{"encoding":"base64","content":%q,"html_url":"https://github.com/canonical/package/blob/%s/pawn.json"}`, content, revisionCommit)
 		default:
 			http.NotFound(writer, request)
 		}
@@ -41,8 +41,23 @@ func TestGitHubRevisionProviderResolvesManifest(t *testing.T) {
 		t.Fatalf("Resolve: %v", err)
 	}
 	if revision.Commit != revisionCommit || revision.Resolved != "v1" ||
+		revision.CanonicalName != "canonical/package" ||
+		revision.SourceURL != "https://github.com/canonical/package" ||
 		len(revision.Manifest.Dependencies) != 1 {
 		t.Fatalf("revision = %+v", revision)
+	}
+}
+
+func TestCanonicalGitHubName(t *testing.T) {
+	tests := map[string]string{
+		"https://github.com/owner/package/blob/main/pawn.json": "owner/package",
+		"https://example.com/owner/package":                    "",
+		"not a URL":                                            "",
+	}
+	for raw, want := range tests {
+		if got := canonicalGitHubName(raw); got != want {
+			t.Errorf("canonicalGitHubName(%q) = %q, want %q", raw, got, want)
+		}
 	}
 }
 

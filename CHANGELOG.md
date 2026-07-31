@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.21.0 - 2026-07-31
+
+- Use canonical GitHub repository identities when resolving moved packages.
+
 ## 1.20.0 - 2026-07-31
 
 - Add `pawn install --update` to refresh locked dependency revisions.

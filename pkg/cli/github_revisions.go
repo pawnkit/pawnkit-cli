@@ -52,7 +52,7 @@ func (p githubRevisionProvider) Resolve(
 		commit = response.SHA
 	}
 
-	packageManifest, err := p.manifest(ctx, dep, commit)
+	packageManifest, canonicalName, err := p.manifest(ctx, dep, commit)
 	if err != nil {
 		return dependency.Revision{}, err
 	}
@@ -65,8 +65,9 @@ func (p githubRevisionProvider) Resolve(
 	}
 	return dependency.Revision{
 		Commit: commit, Resolved: resolved,
-		SourceURL: "https://github.com/" + dep.Name(),
-		Manifest:  *packageManifest,
+		CanonicalName: canonicalName,
+		SourceURL:     "https://github.com/" + canonicalName,
+		Manifest:      *packageManifest,
 	}, nil
 }
 
@@ -74,11 +75,12 @@ func (p githubRevisionProvider) manifest(
 	ctx context.Context,
 	dep manifest.Dependency,
 	commit string,
-) (*manifest.Manifest, error) {
+) (*manifest.Manifest, string, error) {
 	for _, name := range []string{"pawn.json", "pawn.yaml", "pawn.yml"} {
 		var response struct {
 			Content  string `json:"content"`
 			Encoding string `json:"encoding"`
+			HTMLURL  string `json:"html_url"`
 		}
 		endpoint := p.endpoint(dep, "/contents/"+name) + "?ref=" + url.QueryEscape(commit)
 		err := p.getJSON(ctx, endpoint, &response)
@@ -86,18 +88,38 @@ func (p githubRevisionProvider) manifest(
 			continue
 		}
 		if err != nil {
-			return nil, err
+			return nil, "", err
 		}
 		if response.Encoding != "base64" {
-			return nil, fmt.Errorf("GitHub manifest %s uses unsupported encoding %q", name, response.Encoding)
+			return nil, "", fmt.Errorf("GitHub manifest %s uses unsupported encoding %q", name, response.Encoding)
 		}
 		content, err := base64.StdEncoding.DecodeString(strings.ReplaceAll(response.Content, "\n", ""))
 		if err != nil {
-			return nil, fmt.Errorf("decoding GitHub manifest %s: %w", name, err)
+			return nil, "", fmt.Errorf("decoding GitHub manifest %s: %w", name, err)
 		}
-		return loadRemoteManifest(name, content)
+		packageManifest, err := loadRemoteManifest(name, content)
+		if err != nil {
+			return nil, "", err
+		}
+		canonicalName := canonicalGitHubName(response.HTMLURL)
+		if canonicalName == "" {
+			canonicalName = dep.Name()
+		}
+		return packageManifest, canonicalName, nil
 	}
-	return nil, errors.New("GitHub package has no pawn.json, pawn.yaml, or pawn.yml")
+	return nil, "", errors.New("GitHub package has no pawn.json, pawn.yaml, or pawn.yml")
+}
+
+func canonicalGitHubName(raw string) string {
+	parsed, err := url.Parse(raw)
+	if err != nil || !strings.EqualFold(parsed.Host, "github.com") {
+		return ""
+	}
+	parts := strings.Split(strings.Trim(parsed.Path, "/"), "/")
+	if len(parts) < 2 || parts[0] == "" || parts[1] == "" {
+		return ""
+	}
+	return parts[0] + "/" + parts[1]
 }
 
 var errGitHubNotFound = errors.New("GitHub object not found")
