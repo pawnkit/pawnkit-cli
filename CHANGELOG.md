@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.30.1 - 2026-07-31
+
+- Refresh clean dependency checkouts after lock updates.
+
 ## 1.30.0 - 2026-07-31
 
 - Install guarded package dependency cycles deterministically.
