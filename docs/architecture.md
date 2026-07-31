@@ -29,6 +29,8 @@ receive resolved RFC 0012 requests from `pawn-project`.
 the checksum-pinned PawnKit compiler index.
 `pawn build --compiler` uses the bundled direct compiler backend. External
 backends may handle restore, build, and run without reloading the manifest.
+Native restore installs locked source commits first, then verifies and commits
+all RFC 0021 resources for the selected host target.
 
 ## Contracts
 

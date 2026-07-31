@@ -78,7 +78,7 @@ Usage:
   pawn project [--project DIR] [--output human|json]
   pawn audit [--project DIR] [--offline] [--output human|json]
   pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
-  pawn restore [--project DIR] [--backend EXECUTABLE] [--format human|json]
+  pawn restore [--project DIR] [--target OS-ARCH] [--backend EXECUTABLE] [--format human|json]
   pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE] [--artifact FILE] [--format human|json]
   pawn run [--project DIR] [--compiler PATH | --backend EXECUTABLE] [--artifact FILE]
   pawn runtime install [--vendor NAME] [--version VERSION] [--target OS-ARCH] [--destination DIR]

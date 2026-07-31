@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.15.0 - 2026-07-31
+
+- Restore checksum-pinned package resources for an exact host target.
+- Report restored resources in human and JSON output.
+
 ## 1.14.0 - 2026-07-31
 
 - Apply supported sampctl runtime settings when starting open.mp.

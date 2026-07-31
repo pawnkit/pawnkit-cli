@@ -81,8 +81,10 @@ updates tools.
 checks `PATH`. If neither has the compiler, it installs the exact reviewed
 artifact for the current platform. Pass `--compiler` to select another binary.
 `pawn restore` installs dependency sources at the commits recorded in
-`pawn.lock`. Plugin and component binaries still require sampctl. Pass
-`--backend` to use an RFC 0012 backend instead.
+`pawn.lock`. When the lock contains RFC 0021 resource records, it also verifies
+and installs the exact plugin, component, filterscript, and include assets for
+the current host. Pass `--target OS-ARCH` to select another recorded target, or
+`--backend` to use an RFC 0012 backend.
 
 `pawn run` builds an open.mp project, installs its verified server runtime when
 needed, and starts it in an isolated session. The runtime cache is not modified

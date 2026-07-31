@@ -6,17 +6,21 @@ import (
 	"fmt"
 	"io"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/pawnkit/pawn-project/dependency"
 	"github.com/pawnkit/pawn-project/fsx"
+	"github.com/pawnkit/pawn-project/lockfile"
 	projectmodel "github.com/pawnkit/pawn-project/project"
+	projecttoolchain "github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnkit-core/source"
 )
 
 type restoreReport struct {
-	SchemaVersion int                 `json:"schemaVersion"`
-	Dependencies  []dependency.Result `json:"dependencies"`
+	SchemaVersion int                         `json:"schemaVersion"`
+	Dependencies  []dependency.Result         `json:"dependencies"`
+	Resources     []dependency.ResourceResult `json:"resources,omitempty"`
 }
 
 func runRestore(
@@ -32,6 +36,7 @@ func runRestore(
 	flags := flag.NewFlagSet("restore", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	projectDir := flags.String("project", ".", "project directory")
+	target := flags.String("target", runtime.GOOS+"-"+runtime.GOARCH, "resource target")
 	format := flags.String("format", "human", "human or json")
 	if err := flags.Parse(args); err != nil || flags.NArg() != 0 {
 		return ExitUsage
@@ -59,15 +64,43 @@ func runRestore(
 		_, _ = fmt.Fprintln(stderr, "pawn restore:", err)
 		return ExitInternal
 	}
+	resourceResults, err := restoreLockedResources(
+		ctx,
+		loaded.Root(),
+		*target,
+		lock,
+		projecttoolchain.HTTPDownloader{},
+	)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "pawn restore:", err)
+		return ExitInternal
+	}
 
 	switch *format {
 	case "json":
-		if err := writeJSON(stdout, restoreReport{SchemaVersion: 1, Dependencies: results}); err != nil {
+		if err := writeJSON(stdout, restoreReport{
+			SchemaVersion: 1,
+			Dependencies:  results,
+			Resources:     resourceResults,
+		}); err != nil {
 			return ExitInternal
 		}
 	case "human":
 		for _, result := range results {
 			if _, err := fmt.Fprintf(stdout, "%-10s %s\n", result.Status, result.Name); err != nil {
+				return ExitInternal
+			}
+		}
+		for _, result := range resourceResults {
+			if _, err := fmt.Fprintf(
+				stdout,
+				"%-10s %s/%s (%s, %d files)\n",
+				dependency.StatusInstalled,
+				result.Package,
+				result.Resource,
+				result.Target,
+				result.Files,
+			); err != nil {
 				return ExitInternal
 			}
 		}
@@ -77,6 +110,19 @@ func runRestore(
 	}
 
 	return ExitOK
+}
+
+func restoreLockedResources(
+	ctx context.Context,
+	root, target string,
+	lock *lockfile.Lock,
+	downloader dependency.ResourceDownloader,
+) ([]dependency.ResourceResult, error) {
+	if len(lock.Resources) == 0 {
+		return nil, nil
+	}
+	return dependency.NewResourceRestorer(dependency.OSResourceFS{}, downloader).
+		Restore(ctx, root, target, lock)
 }
 
 func hasBackendFlag(args []string) bool {
