@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.28.1 - 2026-07-31
+
+- Apply same-package dependency constraint overrides correctly.
+
 ## 1.28.0 - 2026-07-31
 
 - Apply root dependency overrides during install and lock generation.
