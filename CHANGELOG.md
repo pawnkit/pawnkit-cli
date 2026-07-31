@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.31.0 - 2026-07-31
+
+- Align `pawn check` with pawnfmt v1.4.5 and pawnlint v1.8.9.
+
 ## 1.30.1 - 2026-07-31
 
 - Refresh clean dependency checkouts after lock updates.
