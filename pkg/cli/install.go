@@ -61,6 +61,7 @@ func runInstallWith(
 	target := flags.String("target", runtime.GOOS+"-"+runtime.GOARCH, "resource target")
 	runtimeVersion := flags.String("runtime-version", "", "resource runtime version")
 	format := flags.String("format", "human", "human or json")
+	update := flags.Bool("update", false, "refresh dependency revisions")
 	if err := flags.Parse(args); err != nil || flags.NArg() != 0 {
 		return ExitUsage
 	}
@@ -80,13 +81,13 @@ func runInstallWith(
 		return ExitInternal
 	}
 	lock := loaded.Lockfile()
-	if dependency.LockNeedsResolution(loaded.Manifest(), lock) {
+	if *update || dependency.LockNeedsResolution(loaded.Manifest(), lock) {
 		if services.revisionProvider == nil {
 			_, _ = fmt.Fprintln(stderr, "pawn install: dependency resolver is not configured")
 			return ExitInternal
 		}
 		packages, err := dependency.NewGraphResolver(services.revisionProvider).
-			Resolve(ctx, loaded.Manifest(), lock)
+			ResolveWithOptions(ctx, loaded.Manifest(), lock, dependency.ResolveOptions{Update: *update})
 		if err != nil {
 			_, _ = fmt.Fprintln(stderr, "pawn install:", err)
 			return ExitInternal

@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.20.0 - 2026-07-31
+
+- Add `pawn install --update` to refresh locked dependency revisions.
+
 ## 1.19.0 - 2026-07-31
 
 - Reconcile changed manifest dependencies with existing lockfiles.

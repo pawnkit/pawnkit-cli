@@ -257,6 +257,53 @@ func TestInstallReusesMatchingLockOffline(t *testing.T) {
 	}
 }
 
+func TestInstallUpdateRefreshesMatchingLock(t *testing.T) {
+	root := t.TempDir()
+	writeInstallTestFile(t, root, "pawn.json", `{
+		"entry":"main.pwn",
+		"dependencies":["owner/package@main"]
+	}`)
+	writeInstallTestFile(t, root, "main.pwn", "main() {}\n")
+	writeInstallTestFile(t, root, "pawn.lock", `{
+		"version":1,
+		"generated":"2026-07-31T00:00:00Z",
+		"sampctl_version":"1.14.1",
+		"dependencies":{"github.com/owner/package":{
+			"constraint":"@main","resolved":"main","commit":"1111111111111111111111111111111111111111",
+			"user":"owner","repo":"package","branch":"main"
+		}}
+	}`)
+	provider := &recordingRevisionProvider{}
+
+	var stdout, stderr bytes.Buffer
+	code := runInstallWith(
+		context.Background(),
+		[]string{"--project", root, "--update", "--target", "linux-amd64"},
+		&stdout,
+		&stderr,
+		installServices{
+			sourceInstaller:  installingSourceInstaller{},
+			downloader:       staticResourceDownloader{content: []byte("unused")},
+			provider:         fixedReleaseProvider{},
+			revisionProvider: provider,
+			writeLock:        replaceLockfile,
+		},
+	)
+	if code != ExitOK {
+		t.Fatalf("code = %d, stderr = %s", code, stderr.String())
+	}
+	if provider.receivedLocked {
+		t.Fatal("update reused the locked revision")
+	}
+	content, err := os.ReadFile(filepath.Join(root, "pawn.lock"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(content, []byte("2222222222222222222222222222222222222222")) {
+		t.Fatalf("lockfile = %s", content)
+	}
+}
+
 func TestReplaceLockfileCreatesMissingFile(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "pawn.lock")
 	if err := replaceLockfile(path, []byte("new")); err != nil {
@@ -304,6 +351,22 @@ func (fixedRevisionProvider) Resolve(
 	return dependency.Revision{
 		Commit:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 		Resolved: "v1",
+	}, nil
+}
+
+type recordingRevisionProvider struct {
+	receivedLocked bool
+}
+
+func (p *recordingRevisionProvider) Resolve(
+	_ context.Context,
+	_ manifest.Dependency,
+	locked *lockfile.Package,
+) (dependency.Revision, error) {
+	p.receivedLocked = locked != nil
+	return dependency.Revision{
+		Commit:   "2222222222222222222222222222222222222222",
+		Resolved: "main",
 	}, nil
 }
 
