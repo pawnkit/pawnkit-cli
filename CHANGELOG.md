@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.27.0 - 2026-07-31
+
+- Keep direct project constraints authoritative over transitive requests.
+
 ## 1.26.0 - 2026-07-31
 
 - Prefer direct dependency pins over unqualified transitive references.
