@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.16.0 - 2026-07-31
+
+- Add `pawn install` for resolving, locking, and installing package resources.
+- Support authenticated GitHub release lookups with rate-limit guidance.
+
 ## 1.15.0 - 2026-07-31
 
 - Restore checksum-pinned package resources for an exact host target.

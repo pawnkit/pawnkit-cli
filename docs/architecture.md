@@ -14,6 +14,10 @@ pawn fmt, pawn lint, pawn test
 
 pawn restore
   -> pawn-project/dependency
+
+pawn install
+  -> pawn-project/dependency
+  -> GitHub release API
 ```
 
 The workflow package selects tasks, resolves their dependencies, and keeps
@@ -31,6 +35,9 @@ the checksum-pinned PawnKit compiler index.
 backends may handle restore, build, and run without reloading the manifest.
 Native restore installs locked source commits first, then verifies and commits
 all RFC 0021 resources for the selected host target.
+Install resolves missing records from restored package manifests. The CLI owns
+GitHub transport and recoverable lockfile replacement; selection, inspection,
+validation, and installation remain in `pawn-project`.
 
 ## Contracts
 

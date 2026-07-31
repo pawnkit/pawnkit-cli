@@ -26,6 +26,7 @@ pawn doctor [--project DIR] [--output FORMAT]
 pawn project [--project DIR] [--output FORMAT]
 pawn audit [--project DIR] [--output FORMAT]
 pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
+pawn install [--project DIR] [--target OS-ARCH] [--runtime-version VERSION]
 pawn restore [--project DIR]
 pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE]
 pawn run [--project DIR] [--compiler PATH | --backend EXECUTABLE]
@@ -85,6 +86,11 @@ artifact for the current platform. Pass `--compiler` to select another binary.
 and installs the exact plugin, component, filterscript, and include assets for
 the current host. Pass `--target OS-ARCH` to select another recorded target, or
 `--backend` to use an RFC 0012 backend.
+
+`pawn install` restores the source dependencies, resolves release assets from
+their restored manifests, updates only the PawnKit section of `pawn.lock`, and
+installs the verified files. Set `GITHUB_TOKEN` for private repositories or to
+avoid anonymous GitHub API limits.
 
 `pawn run` builds an open.mp project, installs its verified server runtime when
 needed, and starts it in an isolated session. The runtime cache is not modified
