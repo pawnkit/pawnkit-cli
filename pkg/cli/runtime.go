@@ -33,6 +33,13 @@ type runtimeInstallResult struct {
 	Executable string `json:"executable"`
 }
 
+type installedRuntime struct {
+	artifact   runtimeartifact.Artifact
+	directory  string
+	executable string
+	downloaded bool
+}
+
 func runRuntime(ctx context.Context, args []string, stdout, stderr io.Writer) int {
 	return runRuntimeWith(ctx, args, stdout, stderr, runtimeInstaller{
 		indexURL:      runtimeIndexURL,
@@ -63,50 +70,20 @@ func runRuntimeWith(
 	if err := flags.Parse(args[1:]); err != nil || flags.NArg() != 0 {
 		return ExitUsage
 	}
-
-	indexReader, err := installer.downloader.Download(ctx, installer.indexURL)
-	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitInternal
-	}
-	defer func() { _ = indexReader.Close() }()
-	index, err := runtimeartifact.LoadIndex(indexReader, installer.indexChecksum)
-	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitInternal
-	}
-	artifact, err := index.Select(*vendor, *version, *target)
-	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitFindings
+	if *format != "human" && *format != "json" {
+		_, _ = fmt.Fprintln(stderr, "pawn runtime install: --format must be human or json")
+		return ExitUsage
 	}
 
-	if *destination == "" {
-		cacheDir, cacheErr := installer.cacheDir()
-		if cacheErr != nil {
-			_, _ = fmt.Fprintln(stderr, "pawn runtime install:", cacheErr)
+	var err error
+	if *destination != "" {
+		*destination, err = filepath.Abs(*destination)
+		if err != nil {
+			_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
 			return ExitInternal
 		}
-		*destination, err = runtimeartifact.CacheDestination(cacheDir, *vendor, *version, *target)
-	} else {
-		*destination, err = filepath.Abs(*destination)
 	}
-	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitInternal
-	}
-
-	archive, err := installer.downloader.Download(ctx, artifact.Archive.URL)
-	if err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitInternal
-	}
-	defer func() { _ = archive.Close() }()
-	if err := installer.install(artifact, archive, *destination); err != nil {
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
-		return ExitInternal
-	}
-	executable, err := runtimeartifact.ExecutablePath(artifact, *destination)
+	installed, err := acquireRuntime(ctx, installer, *vendor, *version, *target, *destination, true)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "pawn runtime install:", err)
 		return ExitInternal
@@ -115,20 +92,70 @@ func runRuntimeWith(
 		Vendor:     *vendor,
 		Version:    *version,
 		Target:     *target,
-		Directory:  *destination,
-		Executable: executable,
+		Directory:  installed.directory,
+		Executable: installed.executable,
 	}
 	switch *format {
 	case "human":
-		_, err = fmt.Fprintln(stdout, executable)
+		_, err = fmt.Fprintln(stdout, installed.executable)
 	case "json":
 		err = writeJSON(stdout, result)
-	default:
-		_, _ = fmt.Fprintln(stderr, "pawn runtime install: --format must be human or json")
-		return ExitUsage
 	}
 	if err != nil {
 		return ExitInternal
 	}
 	return ExitOK
+}
+
+func acquireRuntime(
+	ctx context.Context,
+	installer runtimeInstaller,
+	vendor, version, target, destination string,
+	force bool,
+) (installedRuntime, error) {
+	indexReader, err := installer.downloader.Download(ctx, installer.indexURL)
+	if err != nil {
+		return installedRuntime{}, err
+	}
+	defer func() { _ = indexReader.Close() }()
+	index, err := runtimeartifact.LoadIndex(indexReader, installer.indexChecksum)
+	if err != nil {
+		return installedRuntime{}, err
+	}
+	artifact, err := index.Select(vendor, version, target)
+	if err != nil {
+		return installedRuntime{}, err
+	}
+	if destination == "" {
+		cacheDir, cacheErr := installer.cacheDir()
+		if cacheErr != nil {
+			return installedRuntime{}, cacheErr
+		}
+		destination, err = runtimeartifact.CacheDestination(cacheDir, vendor, version, target)
+		if err != nil {
+			return installedRuntime{}, err
+		}
+	}
+	if !force {
+		if executable, verifyErr := runtimeartifact.VerifyInstalled(artifact, destination); verifyErr == nil {
+			return installedRuntime{
+				artifact: artifact, directory: destination, executable: executable,
+			}, nil
+		}
+	}
+	archive, err := installer.downloader.Download(ctx, artifact.Archive.URL)
+	if err != nil {
+		return installedRuntime{}, err
+	}
+	defer func() { _ = archive.Close() }()
+	if err := installer.install(artifact, archive, destination); err != nil {
+		return installedRuntime{}, err
+	}
+	executable, err := runtimeartifact.VerifyInstalled(artifact, destination)
+	if err != nil {
+		return installedRuntime{}, err
+	}
+	return installedRuntime{
+		artifact: artifact, directory: destination, executable: executable, downloaded: true,
+	}, nil
 }

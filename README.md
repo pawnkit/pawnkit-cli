@@ -28,7 +28,7 @@ pawn audit [--project DIR] [--output FORMAT]
 pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR]
 pawn restore [--project DIR]
 pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE]
-pawn run [--project DIR] --backend EXECUTABLE
+pawn run [--project DIR] [--compiler PATH | --backend EXECUTABLE]
 pawn runtime install [--version VERSION] [--target OS-ARCH]
 pawn version
 ```
@@ -84,9 +84,14 @@ artifact for the current platform. Pass `--compiler` to select another binary.
 `pawn.lock`. Plugin and component binaries still require sampctl. Pass
 `--backend` to use an RFC 0012 backend instead.
 
-`run` and optional builds can use an RFC 0012 backend executable. Requests
-contain the selected profile, paths, defines, and compiler rather than asking
-the backend to rediscover the project.
+`pawn run` builds an open.mp project, installs its verified server runtime when
+needed, and starts it in an isolated session. The runtime cache is not modified
+while the server runs. Projects with plugins or filterscripts still need an RFC
+0012 backend.
+
+Pass `--backend` to use an RFC 0012 backend executable. Requests contain the
+selected profile, paths, defines, and compiler rather than asking the backend
+to rediscover the project.
 
 Install the reviewed open.mp server runtime for the current host:
 

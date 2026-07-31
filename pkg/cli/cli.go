@@ -80,7 +80,7 @@ Usage:
   pawn init [--project DIR] [--entry FILE] [--target openmp|samp] [--include DIR] [--dry-run]
   pawn restore [--project DIR] [--backend EXECUTABLE] [--format human|json]
   pawn build [--project DIR] [--compiler PATH | --backend EXECUTABLE] [--artifact FILE] [--format human|json]
-  pawn run [--project DIR] --backend EXECUTABLE [--artifact FILE] [--format human|json]
+  pawn run [--project DIR] [--compiler PATH | --backend EXECUTABLE] [--artifact FILE]
   pawn runtime install [--vendor NAME] [--version VERSION] [--target OS-ARCH] [--destination DIR]
   pawn toolchain --release-set FILE [--output human|json]
   pawn version

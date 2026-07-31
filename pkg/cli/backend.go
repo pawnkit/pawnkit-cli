@@ -46,12 +46,8 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 	if err := flags.Parse(args); err != nil || flags.NArg() != 0 {
 		return ExitUsage
 	}
-	if operation != projectbackend.Build && *compiler != "" {
+	if operation != projectbackend.Build && operation != projectbackend.Run && *compiler != "" {
 		_, _ = fmt.Fprintln(stderr, "pawn", operation, ": --compiler is only valid for build")
-		return ExitUsage
-	}
-	if operation != projectbackend.Build && *executable == "" {
-		_, _ = fmt.Fprintln(stderr, "pawn", operation, ": --backend is required")
 		return ExitUsage
 	}
 	root, err := filepath.Abs(*projectDir)
@@ -72,6 +68,13 @@ func runBackend(ctx context.Context, operation projectbackend.Operation, args []
 	}
 
 	outputPath := resolvedPath(root, *artifact)
+	if operation == projectbackend.Run && *executable == "" {
+		if *format != "human" {
+			_, _ = fmt.Fprintln(stderr, "pawn run: native run supports human output")
+			return ExitUsage
+		}
+		return runNative(ctx, loaded, root, *compiler, outputPath, stdout, stderr, version)
+	}
 	var compilerInfo *projectbackend.Compiler
 	if operation == projectbackend.Build && *executable == "" && *compiler == "" {
 		cacheDir, cacheErr := toolchain.DefaultCacheDir()

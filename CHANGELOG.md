@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.13.0 - 2026-07-31
+
+- Build and run open.mp projects with the verified native server runtime.
+- Keep native run files outside the verified runtime cache.
+
 ## 1.12.0 - 2026-07-30
 
 - Add `pawn runtime install` for verified open.mp server archives.

@@ -6,8 +6,8 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"io"
+	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"github.com/pawnkit/pawnserver/runtimeartifact"
@@ -15,7 +15,8 @@ import (
 
 func TestRuntimeInstallUsesVerifiedIndexAndCache(t *testing.T) {
 	archive := []byte("reviewed archive")
-	executableSum := "sha256:" + strings.Repeat("1", 64)
+	executable := []byte("server")
+	executableSum := checksum(executable)
 	index := []byte(`{
 		"schemaVersion":1,
 		"id":"test",
@@ -49,7 +50,10 @@ func TestRuntimeInstallUsesVerifiedIndexAndCache(t *testing.T) {
 				t.Fatalf("archive = %q, %v", got, err)
 			}
 			installed = destination
-			return nil
+			if err := os.MkdirAll(destination, 0o750); err != nil {
+				return err
+			}
+			return os.WriteFile(filepath.Join(destination, "omp-server"), executable, 0o700)
 		},
 	})
 	if code != ExitOK {
