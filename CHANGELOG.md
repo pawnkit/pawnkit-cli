@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.22.0 - 2026-07-31
+
+- Reuse verified dependency checkouts across projects.
+
 ## 1.21.0 - 2026-07-31
 
 - Use canonical GitHub repository identities when resolving moved packages.

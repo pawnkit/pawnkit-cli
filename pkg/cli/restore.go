@@ -58,7 +58,7 @@ func runRestore(
 		return ExitFindings
 	}
 
-	results, err := dependency.NewRestorer(fsx.OS{}, dependency.GitInstaller{}).
+	results, err := dependency.NewRestorer(fsx.OS{}, cachedGitInstaller()).
 		Restore(ctx, loaded.Root(), lock)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "pawn restore:", err)

@@ -38,7 +38,7 @@ func runInstall(
 	downloader := projecttoolchain.HTTPDownloader{}
 	token := githubToken()
 	return runInstallWith(ctx, args, stdout, stderr, installServices{
-		sourceInstaller: dependency.GitInstaller{},
+		sourceInstaller: cachedGitInstaller(),
 		downloader:      downloader,
 		provider: githubReleaseProvider{
 			token: token,
