@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.29.0 - 2026-07-31
+
+- Recover stale plugin paths when an archive has one matching filename.
+
 ## 1.28.1 - 2026-07-31
 
 - Apply same-package dependency constraint overrides correctly.
