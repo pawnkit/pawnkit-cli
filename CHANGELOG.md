@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.16.1 - 2026-07-31
+
+- Resolve release resources from ordinary sampctl dependency entries.
+
 ## 1.16.0 - 2026-07-31
 
 - Add `pawn install` for resolving, locking, and installing package resources.
