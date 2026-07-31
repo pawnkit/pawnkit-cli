@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.16.2 - 2026-07-31
+
+- Install resources from ordinary sampctl dependencies with broad asset patterns.
+
 ## 1.16.1 - 2026-07-31
 
 - Resolve release resources from ordinary sampctl dependency entries.
