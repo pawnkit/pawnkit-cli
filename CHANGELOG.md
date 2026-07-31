@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.17.0 - 2026-07-31
+
+- Reuse verified resource downloads while resolving and installing them.
+
 ## 1.16.2 - 2026-07-31
 
 - Install resources from ordinary sampctl dependencies with broad asset patterns.

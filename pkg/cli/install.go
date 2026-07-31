@@ -83,9 +83,16 @@ func runInstallWith(
 		_, _ = fmt.Fprintln(stderr, "pawn install:", err)
 		return ExitInternal
 	}
+	downloads, err := dependency.NewReplayDownloader(services.downloader)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "pawn install:", err)
+		return ExitInternal
+	}
+	defer func() { _ = downloads.Close() }()
+
 	resources, err := dependency.NewResourceResolver(
 		fsx.OS{},
-		services.downloader,
+		downloads,
 		services.provider,
 	).Resolve(ctx, loaded.Root(), *target, *runtimeVersion, lock)
 	if err != nil {
@@ -112,7 +119,7 @@ func runInstallWith(
 	updatedLock.Resources = resources
 	resourceResults, err := dependency.NewResourceRestorer(
 		dependency.OSResourceFS{},
-		services.downloader,
+		downloads,
 	).Restore(ctx, loaded.Root(), *target, &updatedLock)
 	if err != nil {
 		_, _ = fmt.Fprintln(stderr, "pawn install:", err)

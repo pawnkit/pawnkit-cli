@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"context"
+	"io"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -44,6 +45,7 @@ func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
 		Name: "plugin.so", URL: "https://example.com/plugin.so",
 		Size: int64(len(content)),
 	}
+	downloader := &installCountingDownloader{content: content}
 	var stdout, stderr bytes.Buffer
 	code := runInstallWith(
 		context.Background(),
@@ -56,7 +58,7 @@ func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
 		&stderr,
 		installServices{
 			sourceInstaller: noopSourceInstaller{},
-			downloader:      staticResourceDownloader{content: content},
+			downloader:      downloader,
 			provider:        fixedReleaseProvider{assets: []dependency.ReleaseAsset{asset}},
 			writeLock:       replaceLockfile,
 		},
@@ -81,6 +83,9 @@ func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), `"resources"`) {
 		t.Fatalf("stdout = %s", stdout.String())
+	}
+	if downloader.calls != 1 {
+		t.Fatalf("download calls = %d, want 1", downloader.calls)
 	}
 }
 
@@ -129,6 +134,16 @@ func (p fixedReleaseProvider) Assets(
 	lockfile.Package,
 ) ([]dependency.ReleaseAsset, error) {
 	return p.assets, nil
+}
+
+type installCountingDownloader struct {
+	content []byte
+	calls   int
+}
+
+func (d *installCountingDownloader) Download(context.Context, string) (io.ReadCloser, error) {
+	d.calls++
+	return io.NopCloser(bytes.NewReader(d.content)), nil
 }
 
 func writeInstallTestFile(t *testing.T, root, relative, content string) {
