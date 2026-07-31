@@ -3,15 +3,18 @@ package cli
 import (
 	"bytes"
 	"context"
+	"errors"
 	"io"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/pawnkit/pawn-project/dependency"
 	"github.com/pawnkit/pawn-project/lockfile"
+	"github.com/pawnkit/pawn-project/manifest"
 )
 
 func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
@@ -87,6 +90,26 @@ func TestInstallResolvesLocksAndInstallsResources(t *testing.T) {
 	if downloader.calls != 1 {
 		t.Fatalf("download calls = %d, want 1", downloader.calls)
 	}
+
+	stdout.Reset()
+	stderr.Reset()
+	code = runInstallWith(
+		context.Background(),
+		[]string{"--project", root, "--target", "linux-amd64"},
+		&stdout,
+		&stderr,
+		installServices{
+			sourceInstaller: noopSourceInstaller{},
+			downloader:      staticResourceDownloader{content: content},
+			provider:        failingReleaseProvider{},
+			writeLock: func(string, []byte) error {
+				return errors.New("unexpected lock write")
+			},
+		},
+	)
+	if code != ExitOK {
+		t.Fatalf("repeat code = %d, stderr = %s", code, stderr.String())
+	}
 }
 
 func TestReplaceLockfilePreservesMode(t *testing.T) {
@@ -115,6 +138,54 @@ func TestReplaceLockfilePreservesMode(t *testing.T) {
 	}
 }
 
+func TestInstallCreatesMissingLock(t *testing.T) {
+	root := t.TempDir()
+	writeInstallTestFile(t, root, "pawn.json", `{
+		"entry":"main.pwn",
+		"dependencies":["owner/package:v1"]
+	}`)
+	writeInstallTestFile(t, root, "main.pwn", "main() {}\n")
+	var stdout, stderr bytes.Buffer
+	code := runInstallWith(
+		context.Background(),
+		[]string{"--project", root, "--target", "linux-amd64"},
+		&stdout,
+		&stderr,
+		installServices{
+			sourceInstaller:  installingSourceInstaller{},
+			downloader:       staticResourceDownloader{content: []byte("unused")},
+			provider:         fixedReleaseProvider{},
+			revisionProvider: fixedRevisionProvider{},
+			writeLock:        replaceLockfile,
+			now: func() time.Time {
+				return time.Date(2026, 7, 31, 12, 0, 0, 0, time.UTC)
+			},
+		},
+	)
+	if code != ExitOK {
+		t.Fatalf("code = %d, stderr = %s", code, stderr.String())
+	}
+	content, err := os.ReadFile(filepath.Join(root, "pawn.lock"))
+	if err != nil {
+		t.Fatalf("ReadFile lock: %v", err)
+	}
+	if !bytes.Contains(content, []byte(`"github.com/owner/package"`)) ||
+		!bytes.Contains(content, []byte(`"sampctl_version": "1.14.1"`)) {
+		t.Fatalf("lockfile = %s", content)
+	}
+}
+
+func TestReplaceLockfileCreatesMissingFile(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "pawn.lock")
+	if err := replaceLockfile(path, []byte("new")); err != nil {
+		t.Fatalf("replaceLockfile: %v", err)
+	}
+	content, err := os.ReadFile(path)
+	if err != nil || string(content) != "new" {
+		t.Fatalf("content = %q, err = %v", content, err)
+	}
+}
+
 type noopSourceInstaller struct{}
 
 func (noopSourceInstaller) Install(
@@ -125,8 +196,46 @@ func (noopSourceInstaller) Install(
 	return dependency.StatusInstalled, nil
 }
 
+type installingSourceInstaller struct{}
+
+func (installingSourceInstaller) Install(
+	_ context.Context,
+	_ lockfile.Package,
+	target string,
+) (dependency.Status, error) {
+	if err := os.MkdirAll(target, 0o750); err != nil {
+		return "", err
+	}
+	if err := os.WriteFile(filepath.Join(target, "pawn.json"), []byte(`{}`), 0o600); err != nil {
+		return "", err
+	}
+	return dependency.StatusInstalled, nil
+}
+
+type fixedRevisionProvider struct{}
+
+func (fixedRevisionProvider) Resolve(
+	context.Context,
+	manifest.Dependency,
+	*lockfile.Package,
+) (dependency.Revision, error) {
+	return dependency.Revision{
+		Commit:   "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		Resolved: "v1",
+	}, nil
+}
+
 type fixedReleaseProvider struct {
 	assets []dependency.ReleaseAsset
+}
+
+type failingReleaseProvider struct{}
+
+func (failingReleaseProvider) Assets(
+	context.Context,
+	lockfile.Package,
+) ([]dependency.ReleaseAsset, error) {
+	return nil, errors.New("release lookup should not run")
 }
 
 func (p fixedReleaseProvider) Assets(

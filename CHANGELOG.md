@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.18.0 - 2026-07-31
+
+- Create a sampctl-compatible lock from a manifest-only GitHub project.
+- Reuse complete locked resource records without release lookups.
+- Accept `GH_TOKEN` for authenticated GitHub resolution.
+
 ## 1.17.0 - 2026-07-31
 
 - Reuse verified resource downloads while resolving and installing them.

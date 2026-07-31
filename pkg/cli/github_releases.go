@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 
@@ -16,6 +17,13 @@ import (
 )
 
 const maxGitHubReleaseResponse = 2 << 20
+
+func githubToken() string {
+	if token := os.Getenv("GITHUB_TOKEN"); token != "" {
+		return token
+	}
+	return os.Getenv("GH_TOKEN")
+}
 
 type githubReleaseProvider struct {
 	client  *http.Client
