@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.1 - 2026-08-01
+
+- Use pawnlint 1.8.11 and pawn-analysis 0.30.3 for trivia-only edit reuse.
+
 ## 1.34.0 - 2026-08-01
 
 - Update pawnlint to v1.8.10 and pawn-analysis to v0.30.2.
