@@ -118,6 +118,25 @@ func TestNativeSessionResourcesSelectsCurrentTarget(t *testing.T) {
 	}
 }
 
+func TestNativeSessionResourcesStagesScriptfiles(t *testing.T) {
+	project := loadNativeProject(t, `{"entry":"main.pwn","output":"main.amx","preset":"openmp"}`)
+	language := filepath.Join(project.Root(), "scriptfiles", "languages", "English")
+	if err := os.MkdirAll(filepath.Dir(language), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(language, []byte("welcome=Hello"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	files, _, _, err := nativeSessionResources(project, "linux-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 1 || files[0].Destination != "scriptfiles/languages/English" ||
+		files[0].Checksum != checksum([]byte("welcome=Hello")) {
+		t.Fatalf("scriptfiles = %+v", files)
+	}
+}
+
 func TestNativeRuntimeSelectionRejectsSAMP(t *testing.T) {
 	project := loadNativeProject(t, `{"entry":"main.pwn","output":"main.amx","preset":"samp"}`)
 	if _, _, err := nativeRuntimeSelection(project); err == nil {

@@ -2,6 +2,8 @@ package cli
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
@@ -22,6 +24,11 @@ import (
 )
 
 const defaultRuntimeVersion = "1.5.8.3079"
+
+const (
+	maxNativeScriptfileBytes = 512 << 20
+	maxNativeScriptfiles     = 4096
+)
 
 func runNative(
 	ctx context.Context,
@@ -172,39 +179,113 @@ func nativeRuntimeSelection(project *projectmodel.Project) (string, runtimeartif
 
 func nativeSessionResources(project *projectmodel.Project, target string) ([]runtimeartifact.SessionFile, []string, []string, error) {
 	lock := project.Lockfile()
-	if lock == nil {
-		return nil, nil, nil, nil
-	}
 	var files []runtimeartifact.SessionFile
 	var plugins []string
 	var sideScripts []string
-	for _, resource := range lock.Resources {
-		if resource.Target != target {
-			continue
-		}
-		for _, file := range resource.Files {
-			clean := pathutil.Clean(file.Destination)
-			prefix, _, _ := strings.Cut(clean, "/")
-			if prefix != "plugins" && prefix != "components" && prefix != "filterscripts" {
+	if lock != nil {
+		for _, resource := range lock.Resources {
+			if resource.Target != target {
 				continue
 			}
-			sourcePath, err := pathutil.SafeJoin(project.Root(), clean)
-			if err != nil {
-				return nil, nil, nil, fmt.Errorf("resource destination %q: %w", file.Destination, err)
-			}
-			files = append(files, runtimeartifact.SessionFile{
-				Source: sourcePath, Destination: clean, Checksum: file.Checksum,
-			})
-			switch prefix {
-			case "plugins":
-				plugins = append(plugins, pluginName(clean))
-			case "filterscripts":
-				sideScripts = append(sideScripts, sideScriptName(clean))
+			for _, file := range resource.Files {
+				clean := pathutil.Clean(file.Destination)
+				prefix, _, _ := strings.Cut(clean, "/")
+				if prefix != "plugins" && prefix != "components" && prefix != "filterscripts" {
+					continue
+				}
+				sourcePath, err := pathutil.SafeJoin(project.Root(), clean)
+				if err != nil {
+					return nil, nil, nil, fmt.Errorf("resource destination %q: %w", file.Destination, err)
+				}
+				files = append(files, runtimeartifact.SessionFile{
+					Source: sourcePath, Destination: clean, Checksum: file.Checksum,
+				})
+				switch prefix {
+				case "plugins":
+					plugins = append(plugins, pluginName(clean))
+				case "filterscripts":
+					sideScripts = append(sideScripts, sideScriptName(clean))
+				}
 			}
 		}
 	}
+	projectFiles, err := nativeScriptfiles(project.Root())
+	if err != nil {
+		return nil, nil, nil, err
+	}
+	files = append(files, projectFiles...)
 	sort.Slice(files, func(i, j int) bool { return files[i].Destination < files[j].Destination })
 	return files, mergeUnique(nil, plugins), mergeUnique(nil, sideScripts), nil
+}
+
+func nativeScriptfiles(root string) ([]runtimeartifact.SessionFile, error) {
+	scriptfiles, err := pathutil.SafeJoin(root, "scriptfiles")
+	if err != nil {
+		return nil, err
+	}
+	info, err := os.Lstat(scriptfiles)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("scriptfiles: %w", err)
+	}
+	if !info.IsDir() || info.Mode()&os.ModeSymlink != 0 {
+		return nil, errors.New("scriptfiles is not a regular directory")
+	}
+	var files []runtimeartifact.SessionFile
+	var total int64
+	err = filepath.WalkDir(scriptfiles, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
+		}
+		if entry.IsDir() {
+			return nil
+		}
+		info, err := entry.Info()
+		if err != nil {
+			return err
+		}
+		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("scriptfile %q is not a regular file", path)
+		}
+		if len(files) >= maxNativeScriptfiles {
+			return errors.New("scriptfiles exceeds file count limit")
+		}
+		total += info.Size()
+		if total > maxNativeScriptfileBytes {
+			return errors.New("scriptfiles exceeds size limit")
+		}
+		checksum, err := fileChecksum(path)
+		if err != nil {
+			return err
+		}
+		relative, err := filepath.Rel(root, path)
+		if err != nil {
+			return err
+		}
+		files = append(files, runtimeartifact.SessionFile{
+			Source: path, Destination: filepath.ToSlash(relative), Checksum: checksum,
+		})
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("scriptfiles: %w", err)
+	}
+	return files, nil
+}
+
+func fileChecksum(path string) (string, error) {
+	file, err := os.Open(path) //nolint:gosec // The path comes from the project scriptfiles walk.
+	if err != nil {
+		return "", err
+	}
+	defer func() { _ = file.Close() }()
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return "sha256:" + hex.EncodeToString(hash.Sum(nil)), nil
 }
 
 func normalizePlugins(values []string) []string {

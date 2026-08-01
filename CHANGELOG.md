@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.33.0 - 2026-08-01
+
+- Stage project scriptfiles for isolated native server runs.
+
 ## 1.32.0 - 2026-08-01
 
 - Stage verified plugins, components, and filterscripts for native open.mp runs.
