@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.2 - 2026-08-01
+
+- Use pawnlint 1.8.23 and pawn-analysis 0.30.7 for PawnPlus tag aliases.
+
 ## 1.34.1 - 2026-08-01
 
 - Use pawnlint 1.8.11 and pawn-analysis 0.30.3 for trivia-only edit reuse.
