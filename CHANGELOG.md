@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.3 - 2026-08-01
+
+- Use pawnlint 1.8.24 and pawn-parser 1.5.7.
+
 ## 1.34.2 - 2026-08-01
 
 - Use pawnlint 1.8.23 and pawn-analysis 0.30.7 for PawnPlus tag aliases.
