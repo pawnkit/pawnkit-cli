@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.32.0 - 2026-08-01
+
+- Stage verified plugins, components, and filterscripts for native open.mp runs.
+
 ## 1.31.0 - 2026-07-31
 
 - Align `pawn check` with pawnfmt v1.4.5 and pawnlint v1.8.9.

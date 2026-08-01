@@ -97,8 +97,9 @@ limits.
 `pawn run` builds an open.mp project, installs its verified server runtime when
 needed, and starts it in an isolated session. The runtime cache is not modified
 while the server runs. Supported sampctl runtime settings are translated to
-open.mp configuration. Projects with plugins, filterscripts, extra gamemodes,
-or unmapped legacy settings still need an RFC 0012 backend.
+open.mp configuration. Verified plugins, components, and filterscripts recorded
+in `pawn.lock` are staged for the current host. Extra gamemodes and unmapped
+legacy settings still need an RFC 0012 backend.
 
 Pass `--backend` to use an RFC 0012 backend executable. Requests contain the
 selected profile, paths, defines, and compiler rather than asking the backend

@@ -9,9 +9,12 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"sort"
 	"strconv"
+	"strings"
 
 	projectbackend "github.com/pawnkit/pawn-project/backend"
+	"github.com/pawnkit/pawn-project/pathutil"
 	projectmodel "github.com/pawnkit/pawn-project/project"
 	"github.com/pawnkit/pawn-project/toolchain"
 	"github.com/pawnkit/pawnkit-cli/pkg/directbackend"
@@ -32,6 +35,14 @@ func runNative(
 		_, _ = fmt.Fprintln(stderr, "pawn run:", err)
 		return ExitFindings
 	}
+	files, plugins, sideScripts, err := nativeSessionResources(loaded, runtime.GOOS+"-"+runtime.GOARCH)
+	if err != nil {
+		_, _ = fmt.Fprintln(stderr, "pawn run:", err)
+		return ExitFindings
+	}
+	sessionOptions.Files = files
+	sessionOptions.LegacyPlugins = mergeUnique(sessionOptions.LegacyPlugins, plugins)
+	sessionOptions.SideScripts = mergeUnique(sessionOptions.SideScripts, sideScripts)
 	cacheDir, cacheErr := toolchain.DefaultCacheDir()
 	if cacheErr != nil {
 		cacheDir = ""
@@ -123,9 +134,8 @@ func nativeRuntimeSelection(project *projectmodel.Project) (string, runtimeartif
 		if selection.Runtime.Version != "" {
 			version = selection.Runtime.Version
 		}
-		if len(selection.Runtime.Plugins) != 0 || len(selection.Runtime.Filterscripts) != 0 ||
-			len(selection.Runtime.Gamemodes) != 0 {
-			return "", runtimeartifact.SessionOptions{}, errors.New("native run does not yet stage plugins, filterscripts, or extra gamemodes")
+		if len(selection.Runtime.Gamemodes) != 0 {
+			return "", runtimeartifact.SessionOptions{}, errors.New("native run does not yet stage extra gamemodes")
 		}
 		if selection.Runtime.Endpoint != "" || selection.Runtime.NoSign != "" ||
 			selection.Runtime.ConnectionCookies != nil || len(selection.Runtime.Extra) != 0 {
@@ -153,9 +163,101 @@ func nativeRuntimeSelection(project *projectmodel.Project) (string, runtimeartif
 			LogChat: selection.Runtime.ChatLogging, LogTimestamps: selection.Runtime.Timestamp,
 			LogTimestampFormat: selection.Runtime.LogTimeFormat, LogDatabase: selection.Runtime.DBLogging,
 			LogDatabaseQueries: selection.Runtime.DBLogQueries, LogCookies: selection.Runtime.CookieLogging,
+			LegacyPlugins: normalizePlugins(selection.Runtime.Plugins),
+			SideScripts:   normalizeSideScripts(selection.Runtime.Filterscripts),
 		}
 	}
 	return version, options, nil
+}
+
+func nativeSessionResources(project *projectmodel.Project, target string) ([]runtimeartifact.SessionFile, []string, []string, error) {
+	lock := project.Lockfile()
+	if lock == nil {
+		return nil, nil, nil, nil
+	}
+	var files []runtimeartifact.SessionFile
+	var plugins []string
+	var sideScripts []string
+	for _, resource := range lock.Resources {
+		if resource.Target != target {
+			continue
+		}
+		for _, file := range resource.Files {
+			clean := pathutil.Clean(file.Destination)
+			prefix, _, _ := strings.Cut(clean, "/")
+			if prefix != "plugins" && prefix != "components" && prefix != "filterscripts" {
+				continue
+			}
+			sourcePath, err := pathutil.SafeJoin(project.Root(), clean)
+			if err != nil {
+				return nil, nil, nil, fmt.Errorf("resource destination %q: %w", file.Destination, err)
+			}
+			files = append(files, runtimeartifact.SessionFile{
+				Source: sourcePath, Destination: clean, Checksum: file.Checksum,
+			})
+			switch prefix {
+			case "plugins":
+				plugins = append(plugins, pluginName(clean))
+			case "filterscripts":
+				sideScripts = append(sideScripts, sideScriptName(clean))
+			}
+		}
+	}
+	sort.Slice(files, func(i, j int) bool { return files[i].Destination < files[j].Destination })
+	return files, mergeUnique(nil, plugins), mergeUnique(nil, sideScripts), nil
+}
+
+func normalizePlugins(values []string) []string {
+	plugins := make([]string, 0, len(values))
+	for _, value := range values {
+		if name := pluginName(value); name != "" {
+			plugins = append(plugins, name)
+		}
+	}
+	return mergeUnique(nil, plugins)
+}
+
+func normalizeSideScripts(values []string) []string {
+	scripts := make([]string, 0, len(values))
+	for _, value := range values {
+		if name := sideScriptName(value); name != "" {
+			scripts = append(scripts, name)
+		}
+	}
+	return mergeUnique(nil, scripts)
+}
+
+func pluginName(value string) string {
+	value = filepath.Base(strings.TrimSpace(value))
+	return strings.TrimSuffix(value, filepath.Ext(value))
+}
+
+func sideScriptName(value string) string {
+	fields := strings.Fields(value)
+	if len(fields) == 0 {
+		return ""
+	}
+	fields[0] = strings.TrimSuffix(filepath.Base(fields[0]), filepath.Ext(fields[0]))
+	if len(fields) == 1 {
+		fields = append(fields, "1")
+	}
+	return strings.Join(fields, " ")
+}
+
+func mergeUnique(groups ...[]string) []string {
+	seen := make(map[string]bool)
+	var result []string
+	for _, group := range groups {
+		for _, value := range group {
+			if value == "" || seen[value] {
+				continue
+			}
+			seen[value] = true
+			result = append(result, value)
+		}
+	}
+	sort.Strings(result)
+	return result
 }
 
 func runtimeSleep(value any) (float64, error) {

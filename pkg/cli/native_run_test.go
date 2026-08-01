@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -56,15 +57,64 @@ func TestRuntimeSleepRejectsInvalidValue(t *testing.T) {
 	}
 }
 
-func TestNativeRuntimeSelectionRejectsPlugins(t *testing.T) {
+func TestNativeRuntimeSelectionMapsPluginsAndFilterscripts(t *testing.T) {
 	project := loadNativeProject(t, `{
 		"entry":"main.pwn",
 		"output":"main.amx",
 		"preset":"openmp",
-		"runtime":{"version":"1.5.8.3079","plugins":["streamer"]}
+		"runtime":{"version":"1.5.8.3079","plugins":["plugins/streamer.so"],"filterscripts":["admin.amx"]}
 	}`)
-	if _, _, err := nativeRuntimeSelection(project); err == nil {
-		t.Fatal("runtime plugins accepted")
+	_, options, err := nativeRuntimeSelection(project)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if fmt.Sprint(options.LegacyPlugins) != "[streamer]" || fmt.Sprint(options.SideScripts) != "[admin 1]" {
+		t.Fatalf("runtime resources = %+v", options)
+	}
+}
+
+func TestNativeSessionResourcesSelectsCurrentTarget(t *testing.T) {
+	project := loadNativeProject(t, `{"entry":"main.pwn","output":"main.amx","preset":"openmp"}`)
+	resources := map[string]string{
+		"plugins/streamer.so":     "plugin",
+		"components/commands.so":  "component",
+		"filterscripts/admin.amx": "filterscript",
+		"includes/resource.inc":   "include",
+	}
+	for name, contents := range resources {
+		path := filepath.Join(project.Root(), filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(path, []byte(contents), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	lock := fmt.Sprintf(`{
+		"version":1,
+		"dependencies":{"plugin://owner/package":{"constraint":"1.0.0","resolved":"1.0.0","commit":"abcdef1","user":"owner","repo":"package","scheme":"plugin"}},
+		"pawnkit":{"schema_version":1,"resources":[
+			{"package":"plugin://owner/package","resource":"server","target":"linux-amd64","url":"https://example.invalid/a.zip","size":1,"checksum":"%[1]s","archive":"zip","files":[
+				{"source":"streamer.so","destination":"plugins/streamer.so","size":6,"checksum":"%[2]s"},
+				{"source":"commands.so","destination":"components/commands.so","size":9,"checksum":"%[3]s"},
+				{"source":"admin.amx","destination":"filterscripts/admin.amx","size":12,"checksum":"%[4]s"},
+				{"source":"resource.inc","destination":"includes/resource.inc","size":7,"checksum":"%[5]s"}
+			]},
+			{"package":"plugin://owner/package","resource":"server","target":"windows-amd64","url":"https://example.invalid/a.zip","size":1,"checksum":"%[1]s","archive":"zip","files":[
+				{"source":"streamer.dll","destination":"plugins/streamer.dll","size":6,"checksum":"%[2]s"}
+			]}
+		]}
+	}`, checksum([]byte("archive")), checksum([]byte("plugin")), checksum([]byte("component")), checksum([]byte("filterscript")), checksum([]byte("include")))
+	if err := os.WriteFile(filepath.Join(project.Root(), "pawn.lock"), []byte(lock), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	project = loadNativeProjectAt(t, project.Root())
+	files, plugins, scripts, err := nativeSessionResources(project, "linux-amd64")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(files) != 3 || fmt.Sprint(plugins) != "[streamer]" || fmt.Sprint(scripts) != "[admin 1]" {
+		t.Fatalf("resources = %+v, %v, %v", files, plugins, scripts)
 	}
 }
 
@@ -84,6 +134,11 @@ func loadNativeProject(t *testing.T, manifest string) *projectmodel.Project {
 	if err := os.WriteFile(filepath.Join(root, "main.pwn"), []byte("main() {}\n"), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	return loadNativeProjectAt(t, root)
+}
+
+func loadNativeProjectAt(t *testing.T, root string) *projectmodel.Project {
+	t.Helper()
 	project, err := projectmodel.Load(source.NewRegistry(), fsx.OS{}, root, projectmodel.Options{})
 	if err != nil {
 		t.Fatal(err)
