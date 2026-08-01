@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.0 - 2026-08-01
+
+- Update pawnlint to v1.8.10 and pawn-analysis to v0.30.2.
+
 ## 1.33.0 - 2026-08-01
 
 - Stage project scriptfiles for isolated native server runs.
