@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.5 - 2026-08-02
+
+- Use pawnlint 1.8.26 for faster recursive-call checks.
+
 ## 1.34.4 - 2026-08-02
 
 - Use pawnlint 1.8.25 for faster statement-macro checks.
