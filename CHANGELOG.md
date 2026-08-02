@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.6 - 2026-08-02
+
+- Use pawnlint 1.8.27, pawn-analysis 0.30.9, and pawn-parser 1.5.8.
+
 ## 1.34.5 - 2026-08-02
 
 - Use pawnlint 1.8.26 for faster recursive-call checks.
