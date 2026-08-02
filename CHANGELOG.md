@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.13 - 2026-08-02
+
+- Use pawnlint 1.8.30.
+
 ## 1.34.12 - 2026-08-02
 
 - Use pawn-analysis 0.30.11 through the shared toolchain.
