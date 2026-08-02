@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.7 - 2026-08-02
+
+- Use pawnfmt 1.4.6.
+
 ## 1.34.6 - 2026-08-02
 
 - Use pawnlint 1.8.27, pawn-analysis 0.30.9, and pawn-parser 1.5.8.
