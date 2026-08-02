@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.4 - 2026-08-02
+
+- Use pawnlint 1.8.25 for faster statement-macro checks.
+
 ## 1.34.3 - 2026-08-01
 
 - Use pawnlint 1.8.24 and pawn-parser 1.5.7.
