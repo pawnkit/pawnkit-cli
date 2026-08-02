@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.8 - 2026-08-02
+
+- Use pawnfmt 1.4.7 and pawn-project 0.34.2.
+
 ## 1.34.7 - 2026-08-02
 
 - Use pawnfmt 1.4.6.
