@@ -22,8 +22,8 @@ github.com/pawnkit/pawnfmt v1.4.7 h1:kEaX3joMVqUqbp5eddmZJ/1glbrIW0s+c1Js/Sha7ac
 github.com/pawnkit/pawnfmt v1.4.7/go.mod h1:1a6GsE6J079jxVnCGnc1hifv5kVzMLwkMNNO2pBUA5E=
 github.com/pawnkit/pawnkit-core v0.5.0 h1:faEI2LGaP9czSDaKxtw4qvGUNuft88qeR/MdW0jLmlg=
 github.com/pawnkit/pawnkit-core v0.5.0/go.mod h1:jGhXHEEzr8juezaRhh/AkGzX6S4eGQnprB83vrI1peU=
-github.com/pawnkit/pawnlint v1.8.30 h1:8w5kTCB1mtWwni8kKf2IQr7chRUGRQ29JItLAuhaoiE=
-github.com/pawnkit/pawnlint v1.8.30/go.mod h1:ut5Foaxjf234nx4fQnO3zKnBN0xhWEQTt7H6YWca8WI=
+github.com/pawnkit/pawnlint v1.8.31 h1:h4KG1sfRDix7UTorjVpaGiw6gfI+z8C9HBw8MngcRkA=
+github.com/pawnkit/pawnlint v1.8.31/go.mod h1:ut5Foaxjf234nx4fQnO3zKnBN0xhWEQTt7H6YWca8WI=
 github.com/pawnkit/pawnserver v0.7.0 h1:eAujTYkWPwSAVZMnGJ8lslW4rfrPDi8wrp+uUcIjrns=
 github.com/pawnkit/pawnserver v0.7.0/go.mod h1:2xxYeC6aEQvxpunGRgHJ3xqjhdyU4sbEs0iG80WofSw=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
