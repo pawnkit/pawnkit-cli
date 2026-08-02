@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.17 - 2026-08-02
+
+- Use pawnlint 1.8.34.
+
 ## 1.34.16 - 2026-08-02
 
 - Use pawnfmt 1.4.8, pawnlint 1.8.33, and pawnserver 0.7.2.
