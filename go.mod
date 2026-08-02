@@ -14,7 +14,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/editorconfig/editorconfig-core-go/v2 v2.6.4 // indirect
-	github.com/pawnkit/pawn-analysis v0.30.9 // indirect
+	github.com/pawnkit/pawn-analysis v0.30.10 // indirect
 	github.com/pawnkit/pawn-parser v1.5.8 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
