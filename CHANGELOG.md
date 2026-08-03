@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.25 - 2026-08-03
+
+- Use pawnlint v1.8.42 for cached project analysis.
+
 ## 1.34.24 - 2026-08-03
 
 - Republish the CLI artifacts with complete release provenance.
