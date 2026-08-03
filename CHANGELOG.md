@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.27 - 2026-08-03
+
+- Use pawnlint v1.8.51 for shared loop indexes in performance checks.
+
 ## 1.34.26 - 2026-08-03
 
 - Use pawnfmt v1.4.10 for the project workflow.
