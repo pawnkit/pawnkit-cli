@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.23 - 2026-08-03
+
+- Use pawnlint v1.8.41 for target-aware cached control-flow models.
+
 ## 1.34.22 - 2026-08-03
 
 - Use pawnlint v1.8.39 for cached editor project models.
