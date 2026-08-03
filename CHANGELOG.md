@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Performance
+
+- Use pawnlint v1.8.56 and pawn-analysis v0.30.23 for incremental CFG checks.
+
 ## 1.34.33 - 2026-08-03
 
 ### Performance
