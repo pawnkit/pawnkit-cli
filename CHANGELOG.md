@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.26 - 2026-08-03
+
+- Use pawnfmt v1.4.10 for the project workflow.
+
 ## 1.34.25 - 2026-08-03
 
 - Use pawnlint v1.8.42 for cached project analysis.

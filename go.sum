@@ -18,8 +18,8 @@ github.com/pawnkit/pawn-parser v1.5.11 h1:awuuDWY7qEm2Jw95kxx5GUZOddnj8kpCZ7YtT/
 github.com/pawnkit/pawn-parser v1.5.11/go.mod h1:Egw7oGm4jkDpaWBvLkYItfNTZcAcvTg+gWjlAGL9rbI=
 github.com/pawnkit/pawn-project v0.34.2 h1:0U3bSKSJJqEHjxdAcOyQuXrfF512rHrpDIqBrPuxEmo=
 github.com/pawnkit/pawn-project v0.34.2/go.mod h1:caXLtXl6HEpoo+7Uom0vdNo68X9i+z30xTMZ0ZVGkv4=
-github.com/pawnkit/pawnfmt v1.4.9 h1:vjo7L8DmBtMywJO8+hXYT+gQLqAS8wUwBlkJraDZMu4=
-github.com/pawnkit/pawnfmt v1.4.9/go.mod h1:ngBxILkLNnQIdsgJFQeKfCrIaylH48I4eMtG6Odq3z4=
+github.com/pawnkit/pawnfmt v1.4.10 h1:wWS9B//G9voGrT+uk2D6hjz+UyLQcToI77DOqaVV7ac=
+github.com/pawnkit/pawnfmt v1.4.10/go.mod h1:d2VTCbtjgbDZBmPC4+7IApR09m6RR9b8A126jbnh/Es=
 github.com/pawnkit/pawnkit-core v0.5.0 h1:faEI2LGaP9czSDaKxtw4qvGUNuft88qeR/MdW0jLmlg=
 github.com/pawnkit/pawnkit-core v0.5.0/go.mod h1:jGhXHEEzr8juezaRhh/AkGzX6S4eGQnprB83vrI1peU=
 github.com/pawnkit/pawnlint v1.8.42 h1:bYfzA7PSVp1J9uR8s02VLQ0ZayTxBlSEgafddj4PTOA=
