@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.32 - 2026-08-03
+
+- Use pawn-analysis v0.30.21 through pawnlint v1.8.54.
+
 ## 1.34.31 - 2026-08-03
 
 - Use PawnKit Actions v1.8.73 in CI.
