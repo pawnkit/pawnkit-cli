@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.37 - 2026-08-04
+
+### Changed
+
+- Use pawnlint v1.8.59 and pawnserver v0.7.4.
+
 ## 1.34.36 - 2026-08-03
 
 ### Performance

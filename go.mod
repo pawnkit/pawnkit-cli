@@ -6,8 +6,8 @@ require (
 	github.com/pawnkit/pawn-project v0.34.2
 	github.com/pawnkit/pawnfmt v1.4.10
 	github.com/pawnkit/pawnkit-core v0.5.0
-	github.com/pawnkit/pawnlint v1.8.58
-	github.com/pawnkit/pawnserver v0.7.2
+	github.com/pawnkit/pawnlint v1.8.59
+	github.com/pawnkit/pawnserver v0.7.4
 )
 
 require (
