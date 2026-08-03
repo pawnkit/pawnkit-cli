@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.36 - 2026-08-03
+
+### Performance
+
+- Use pawnlint v1.8.58 and pawn-analysis v0.30.24 for workspace resolver reuse.
+
 ## 1.34.35 - 2026-08-03
 
 ### Performance
