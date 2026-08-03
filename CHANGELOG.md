@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.30 - 2026-08-03
+
+- Use PawnKit Actions v1.8.72 in CI.
+
 ## 1.34.29 - 2026-08-03
 
 - Use pawnlint v1.8.53's cached shared diagnostic mappings.
