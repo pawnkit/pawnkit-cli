@@ -6,7 +6,7 @@ require (
 	github.com/pawnkit/pawn-project v0.34.2
 	github.com/pawnkit/pawnfmt v1.4.10
 	github.com/pawnkit/pawnkit-core v0.5.0
-	github.com/pawnkit/pawnlint v1.8.54
+	github.com/pawnkit/pawnlint v1.8.55
 	github.com/pawnkit/pawnserver v0.7.2
 )
 
@@ -14,7 +14,7 @@ require (
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/editorconfig/editorconfig-core-go/v2 v2.6.4 // indirect
-	github.com/pawnkit/pawn-analysis v0.30.21 // indirect
+	github.com/pawnkit/pawn-analysis v0.30.22 // indirect
 	github.com/pawnkit/pawn-parser v1.5.11 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
