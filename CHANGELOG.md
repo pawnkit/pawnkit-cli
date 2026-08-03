@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.18 - 2026-08-03
+
+- Use pawnlint 1.8.35 and the retained-token analysis path.
+
 ## 1.34.17 - 2026-08-02
 
 - Use pawnlint 1.8.34.
