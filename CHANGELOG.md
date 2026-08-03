@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.21 - 2026-08-03
+
+- Use pawnlint 1.8.38 and pawn-analysis 0.30.16.
+
 ## 1.34.20 - 2026-08-03
 
 - Use pawnlint 1.8.37 and pawn-analysis 0.30.15 for lower-overhead lint runs.
