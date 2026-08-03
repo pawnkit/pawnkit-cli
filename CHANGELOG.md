@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 1.34.35 - 2026-08-03
 
 ### Performance
 
