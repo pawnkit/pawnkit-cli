@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.28 - 2026-08-03
+
+- Use pawnlint v1.8.52 for loop-scoped performance checks.
+
 ## 1.34.27 - 2026-08-03
 
 - Use pawnlint v1.8.51 for shared loop indexes in performance checks.
