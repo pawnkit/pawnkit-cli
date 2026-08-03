@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.34.29 - 2026-08-03
+
+- Use pawnlint v1.8.53's cached shared diagnostic mappings.
+
 ## 1.34.28 - 2026-08-03
 
 - Use pawnlint v1.8.52 for loop-scoped performance checks.
