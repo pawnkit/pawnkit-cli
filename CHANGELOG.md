@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.34.38 - 2026-08-04
+
+### Performance
+
+- Use pawnlint v1.8.60's lazy assignment and symbol indexes.
+
 ## 1.34.37 - 2026-08-04
 
 ### Changed
